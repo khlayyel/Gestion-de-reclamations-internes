@@ -380,7 +380,7 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
                                 Icon(Icons.access_time, size: 16, color: Colors.white.withOpacity(0.8)),
                                 SizedBox(width: 4),
                                 Text(
-                                  '$dateLabel ${dateFormatter.format(displayDate)}',
+                                  '$dateLabel ${dateFormatter.format(displayDate.toLocal())}',
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.8),
                                     fontSize: 14,

@@ -124,9 +124,9 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
               SizedBox(height: 16),
               _buildDetailRow('Statut', reclamation.status),
               SizedBox(height: 16),
-              _buildDetailRow('Créée le', DateFormat('dd/MM/yyyy HH:mm').format(reclamation.createdAt)),
+              _buildDetailRow('Créée le', DateFormat('dd/MM/yyyy HH:mm').format(reclamation.createdAt.toLocal())),
               SizedBox(height: 16),
-              _buildDetailRow('Dernière mise à jour', DateFormat('dd/MM/yyyy HH:mm').format(reclamation.updatedAt)),
+              _buildDetailRow('Dernière mise à jour', DateFormat('dd/MM/yyyy HH:mm').format(reclamation.updatedAt.toLocal())),
               SizedBox(height: 16),
               _buildDetailRow('Assignée à', assignedUserName),
             ],
@@ -474,7 +474,7 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
                                                   Icon(Icons.access_time, size: 16, color: Colors.white.withOpacity(0.8)),
                                                   SizedBox(width: 4),
                                                   Text(
-                                                    '$dateLabel ${dateFormatter.format(displayDate)}',
+                                                    '$dateLabel ${dateFormatter.format(displayDate.toLocal())}',
                                                     style: TextStyle(
                                                       color: Colors.white.withOpacity(0.8),
                                                       fontSize: 14,
