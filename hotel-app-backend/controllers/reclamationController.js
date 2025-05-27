@@ -15,6 +15,8 @@ exports.createReclamation = async (req, res) => {
 
     const reclamation = new Reclamation(reclamationData);
     await reclamation.save();
+    // Émettre l'événement WebSocket
+    req.app.get('io').emit('reclamationsUpdated');
     res.status(201).json(reclamation);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -54,6 +56,8 @@ exports.updateStatus = async (req, res) => {
     );
 
     console.log('Réclamation mise à jour (status):', updatedReclamation);
+    // Émettre l'événement WebSocket
+    req.app.get('io').emit('reclamationsUpdated');
     res.json(updatedReclamation);
   } catch (err) {
     console.log('Erreur updateStatus:', err);
@@ -91,6 +95,8 @@ exports.updateReclamation = async (req, res) => {
     }
 
     console.log('Réclamation mise à jour:', updatedReclamation);
+    // Émettre l'événement WebSocket
+    req.app.get('io').emit('reclamationsUpdated');
     res.status(200).json(updatedReclamation);
   } catch (error) {
     console.log('Erreur lors de la mise à jour:', error);
@@ -101,6 +107,8 @@ exports.updateReclamation = async (req, res) => {
 exports.deleteReclamation = async (req, res) => {
   try {
     await Reclamation.findByIdAndDelete(req.params.id);
+    // Émettre l'événement WebSocket
+    req.app.get('io').emit('reclamationsUpdated');
     res.status(200).json({ message: 'Réclamation supprimée' });
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la suppression', error });

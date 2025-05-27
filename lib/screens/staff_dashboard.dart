@@ -5,6 +5,8 @@ import 'package:hotel_staff_app/screens/edit_reclamation_form.dart';
 import '../services/reclamation_service.dart';
 import 'reclamation.dart';
 import '../services/api_service.dart';
+import 'dart:async';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class StaffDashboard extends StatefulWidget {
   @override
@@ -38,15 +40,29 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
     'Historique'
   ];
 
+  Timer? _refreshTimer;
+  WebSocketChannel? _channel;
+
   @override
   void initState() {
     super.initState();
     _fetchUserInfo();
     _fetchReclamations();
+    // Connexion WebSocket
+    _channel = WebSocketChannel.connect(
+      Uri.parse('wss://gestion-de-reclamations-internes.onrender.com'),
+    );
+    _channel!.stream.listen((event) {
+      if (event == 'reclamationsUpdated') {
+        _fetchReclamations();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();
+    _channel?.sink.close();
     super.dispose();
   }
 
