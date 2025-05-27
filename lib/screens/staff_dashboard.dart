@@ -15,6 +15,7 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
   late Future<List<Reclamation>> _reclamations;
   String? _userName;
   String? _userEmail;
+  String? _userDepartment;
   bool _isLoading = false;
   int _selectedIndex = 0; // Pour la navigation dans le menu
 
@@ -52,9 +53,11 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
   void _fetchUserInfo() async {
     String? name = await ApiService.obtenirNomUtilisateurConnecte();
     String? email = await ApiService.obtenirEmailUtilisateurConnecte();
+    String? department = await ApiService.obtenirDepartementUtilisateurConnecte();
     setState(() {
       _userName = name;
       _userEmail = email;
+      _userDepartment = department;
     });
   }
 
@@ -134,7 +137,11 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
     
     switch (menuIndex) {
       case 0: // Nouvelles réclamations
-        filtered = filtered.where((r) => r.status == 'New').toList();
+        if (_userDepartment != null && _userDepartment!.isNotEmpty) {
+          filtered = filtered.where((r) => r.status == 'New' && r.departments.contains(_userDepartment)).toList();
+        } else {
+          filtered = filtered.where((r) => r.status == 'New').toList();
+        }
         break;
       case 1: // Mes réclamations
         filtered = filtered.where((r) => r.createdBy == _userName).toList();

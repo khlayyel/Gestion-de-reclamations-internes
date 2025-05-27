@@ -29,10 +29,12 @@ class ApiService {
         String userName = responseData['name'];
         String userEmail = responseData['email'];
         String userRole = responseData['role'] ?? 'staff'; // Récupérer le rôle avec une valeur par défaut
+        String userDepartment = responseData['department'] ?? '';
         
         await prefs.setString('userName', userName);
         await prefs.setString('userEmail', userEmail);
         await prefs.setString('userRole', userRole);
+        await prefs.setString('userDepartment', userDepartment);
         
         print('Connexion réussie pour: $userName avec le rôle: $userRole');
         return responseData;
@@ -65,6 +67,12 @@ class ApiService {
   static Future<String?> obtenirRoleUtilisateurConnecte() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('userRole');
+  }
+
+  // Méthode pour obtenir le département de l'utilisateur connecté
+  static Future<String?> obtenirDepartementUtilisateurConnecte() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userDepartment');
   }
 
   // Méthode pour se déconnecter
