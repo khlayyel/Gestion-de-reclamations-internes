@@ -3,9 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';  // Import nécessaire pour SharedPreferences
 
-final String baseUrl = kIsWeb
-    ? "https://hotel-app-backend.onrender.com/api"
-    : "http://10.0.2.2:5000/api";
+final String baseUrl = "https://gestion-de-reclamations-internes.onrender.com/api";
 
 class ApiService {
 

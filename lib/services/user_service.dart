@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 class UserService {
   static String get baseUrl {
-    return 'http://localhost:5000';
+    return 'https://gestion-de-reclamations-internes.onrender.com';
   }
 
   static Future<List<dynamic>> getUsers() async {

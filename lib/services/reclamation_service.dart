@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 class ReclamationService {
   // Fonction pour obtenir l'URL de base selon la plateforme
   static String getBaseUrl() {
-    return 'http://localhost:5000';
+    return 'https://gestion-de-reclamations-internes.onrender.com';
   }
 
   // Méthode pour récupérer les réclamations
