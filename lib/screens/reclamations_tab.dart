@@ -17,7 +17,7 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
   DateTime? _startDate;
   DateTime? _endDate;
   final List<String> _statusOptions = ['New', 'In Progress', 'Done'];
-  final List<String> _departmentOptions = ['HR', 'IT', 'Maintenance', 'Admin'];
+  final List<String> _departmentOptions = ['Nettoyage', 'Réception', 'Maintenance', 'Sécurité', 'Restauration', 'Cuisine', 'Blanchisserie', 'Spa', 'Informatique', 'Direction'];
   
   // Définition de l'URL de base
   final String baseUrl = 'https://gestion-de-reclamations-internes.onrender.com';

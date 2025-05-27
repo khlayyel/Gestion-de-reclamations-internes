@@ -28,21 +28,16 @@ class _ReclamationFormState extends State<ReclamationForm> {
 
   // Liste des départements pour CheckboxListTile
   final List<String> _availableDepartments = [
-    'HR',
-    'IT',
-    'Maintenance',
-    'Admin',
-    'Restauration',
-    'Réception',
     'Nettoyage',
+    'Réception',
+    'Maintenance',
     'Sécurité',
-    'Comptabilité',
-    'Marketing',
-    'Ressources Humaines',
-    'Service Client',
-    'Direction',
-    'Logistique',
-    'Qualité'
+    'Restauration',
+    'Cuisine',
+    'Blanchisserie',
+    'Spa',
+    'Informatique',
+    'Direction'
   ];
 
   // Liste des priorités avec leurs descriptions

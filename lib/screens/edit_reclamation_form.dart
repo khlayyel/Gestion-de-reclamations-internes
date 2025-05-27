@@ -25,7 +25,18 @@ class _EditReclamationFormState extends State<EditReclamationForm> {
   late String _createdBy;
 
   // Liste des départements pour CheckboxListTile
-  final List<String> _availableDepartments = ['HR', 'IT', 'Maintenance', 'Admin'];
+  final List<String> _availableDepartments = [
+    'Nettoyage',
+    'Réception',
+    'Maintenance',
+    'Sécurité',
+    'Restauration',
+    'Cuisine',
+    'Blanchisserie',
+    'Spa',
+    'Informatique',
+    'Direction'
+  ];
 
   // Liste des priorités pour Dropdown
   final List<int> _priorityOptions = [1, 2, 3];

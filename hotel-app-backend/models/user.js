@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['staff', 'manager'], default: 'staff' },
   department: {
     type: String,
-    enum: ['Housekeeping', 'Reception', 'Maintenance', 'Security', 'Food & Beverage', 'Kitchen', 'Laundry', 'Spa', 'IT', 'Management'],
+    enum: ['Nettoyage', 'Réception', 'Maintenance', 'Sécurité', 'Restauration', 'Cuisine', 'Blanchisserie', 'Spa', 'Informatique', 'Direction'],
     required: true
   }
 }, { timestamps: true });

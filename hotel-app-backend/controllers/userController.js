@@ -14,7 +14,7 @@ exports.createUser = async (req, res) => {
       });
     }
 
-    // Use the first department as the primary department
+    // departments[0] doit être en français (voir enum du modèle)
     const department = departments[0];
 
     const newUser = new User({ 

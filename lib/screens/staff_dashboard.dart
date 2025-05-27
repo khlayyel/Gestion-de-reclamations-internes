@@ -137,11 +137,7 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
     
     switch (menuIndex) {
       case 0: // Nouvelles réclamations
-        if (_userDepartment != null && _userDepartment!.isNotEmpty) {
-          filtered = filtered.where((r) => r.status == 'New' && r.departments.contains(_userDepartment)).toList();
-        } else {
-          filtered = filtered.where((r) => r.status == 'New').toList();
-        }
+        filtered = filtered.where((r) => r.status == 'New').toList();
         break;
       case 1: // Mes réclamations
         filtered = filtered.where((r) => r.createdBy == _userName).toList();
