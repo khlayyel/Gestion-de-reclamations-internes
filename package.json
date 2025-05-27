@@ -1,0 +1,12 @@
+{
+  "name": "hotel-app",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "hotel-app-backend"
+  ],
+  "scripts": {
+    "build": "cd hotel-app-backend && npm install",
+    "start": "cd hotel-app-backend && node ./server.js"
+  }
+} 
