@@ -31,7 +31,10 @@ class UserService {
     final response = await http.post(
       Uri.parse('$baseUrl/api/users/create'),
       headers: {'Content-Type': 'application/json'},
-      body: json.encode(userData),
+      body: json.encode({
+        ...userData,
+        'departments': userData['departments'] != null ? List<String>.from(userData['departments']) : [],
+      }),
     );
     if (response.statusCode == 201) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Utilisateur créé avec succès')));
@@ -45,7 +48,10 @@ class UserService {
     final response = await http.put(
       Uri.parse('$baseUrl/api/users/update/$id'),
       headers: {'Content-Type': 'application/json'},
-      body: json.encode(userData),
+      body: json.encode({
+        ...userData,
+        'departments': userData['departments'] != null ? List<String>.from(userData['departments']) : [],
+      }),
     );
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Utilisateur modifié avec succès')));

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'reclamations_tab.dart';
 import 'users_tab.dart';
-import 'manager_stats_dashboard.dart';
+import 'admin_stats_dashboard.dart';
 import '../services/api_service.dart';
 
-class ManagerDashboard extends StatefulWidget {
+class AdminDashboard extends StatefulWidget {
   @override
-  _ManagerDashboardState createState() => _ManagerDashboardState();
+  _AdminDashboardState createState() => _AdminDashboardState();
 }
 
-class _ManagerDashboardState extends State<ManagerDashboard> with SingleTickerProviderStateMixin {
+class _AdminDashboardState extends State<AdminDashboard> with SingleTickerProviderStateMixin {
   int _selectedPage = 0;
   String? _userName;
   String? _userEmail;
@@ -51,7 +51,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> with SingleTickerPr
     Widget body;
     switch (_selectedPage) {
       case 0:
-        body = ManagerStatsDashboard();
+        body = AdminStatsDashboard();
         break;
       case 1:
         body = ReclamationsTab();
@@ -60,7 +60,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> with SingleTickerPr
         body = UsersTab();
         break;
       default:
-        body = ManagerStatsDashboard();
+        body = AdminStatsDashboard();
     }
 
     return Scaffold(
@@ -128,4 +128,4 @@ class _ManagerDashboardState extends State<ManagerDashboard> with SingleTickerPr
       onTap: onTap,
     );
   }
-}
+} 

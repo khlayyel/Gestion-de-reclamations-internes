@@ -17,4 +17,7 @@ router.put('/update/:id', reclamationController.updateReclamation);
 // Route pour supprimer une réclamation
 router.delete('/:id', reclamationController.deleteReclamation);
 
+// Route pour obtenir les réclamations selon le rôle de l'utilisateur
+router.get('/byUser', reclamationController.getReclamationsByUser);
+
 module.exports = router;

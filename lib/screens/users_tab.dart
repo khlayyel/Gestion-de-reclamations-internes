@@ -56,7 +56,7 @@ class _UsersTabState extends State<UsersTab> {
       _filteredUsers = users.where((u) {
         final nameMatch = (u['name'] ?? '').toLowerCase().contains(query.toLowerCase());
         final roleMatch = _selectedRole == null || u['role'] == _selectedRole;
-        final departmentMatch = _selectedDepartment == null || u['department'] == _selectedDepartment;
+        final departmentMatch = _selectedDepartment == null || (u['departments'] != null && (u['departments'] as List).contains(_selectedDepartment));
         return nameMatch && roleMatch && departmentMatch;
       }).toList();
     });
@@ -68,7 +68,7 @@ class _UsersTabState extends State<UsersTab> {
       _filteredUsers = users.where((u) {
         final nameMatch = (u['name'] ?? '').toLowerCase().contains(_searchQuery.toLowerCase());
         final roleMatch = _selectedRole == null || u['role'] == _selectedRole;
-        final departmentMatch = _selectedDepartment == null || u['department'] == _selectedDepartment;
+        final departmentMatch = _selectedDepartment == null || (u['departments'] != null && (u['departments'] as List).contains(_selectedDepartment));
         return nameMatch && roleMatch && departmentMatch;
       }).toList();
     });
@@ -314,7 +314,9 @@ class _UsersTabState extends State<UsersTab> {
                                         Icon(Icons.business, size: 16, color: Colors.green.shade700),
                                         SizedBox(width: 4),
                                         Text(
-                                          user['department'] ?? '',
+                                          (user['departments'] != null)
+                                              ? (user['departments'] as List).join(', ')
+                                              : '',
                                           style: TextStyle(
                                             color: Colors.green.shade700,
                                             fontWeight: FontWeight.w500,
@@ -401,9 +403,17 @@ class _UserFormDialogState extends State<UserFormDialog> {
     _emailController = TextEditingController(text: widget.user?['email'] ?? '');
     _passwordController = TextEditingController();
     _role = widget.user?['role'] ?? 'staff';
-    _selectedDepartments = widget.user?['departments'] != null 
-        ? List<String>.from(widget.user!['departments'])
-        : ['Nettoyage'];
+    if (_role == 'staff') {
+      if (widget.user?['departments'] != null) {
+        _selectedDepartments = List<String>.from(widget.user!['departments']);
+      } else if (widget.user?['department'] != null) {
+        _selectedDepartments = [widget.user!['department']];
+      } else {
+        _selectedDepartments = [];
+      }
+    } else {
+      _selectedDepartments = [];
+    }
   }
 
   @override
@@ -420,10 +430,8 @@ class _UserFormDialogState extends State<UserFormDialog> {
       'name': _nameController.text,
       'email': _emailController.text,
       'role': _role,
+      'departments': _role == 'staff' ? _selectedDepartments.toList() : [],
     };
-    if (_role == 'staff') {
-      userData['departments'] = _selectedDepartments;
-    }
     if (widget.user == null) {
       userData['password'] = _passwordController.text;
       final exists = await UserService.checkEmailExists(_emailController.text);

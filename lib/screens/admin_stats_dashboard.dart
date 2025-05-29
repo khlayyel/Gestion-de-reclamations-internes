@@ -99,7 +99,7 @@ class _AdminStatsDashboardState extends State<AdminStatsDashboard> with SingleTi
           return Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return Center(child: Text('Erreur: ${snapshot.error}'));
+          return Center(child: Text('Erreur: \\${snapshot.error}'));
         }
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Center(child: Text('Aucune donnée de réclamation.'));
@@ -150,7 +150,7 @@ class _AdminStatsDashboardState extends State<AdminStatsDashboard> with SingleTi
                     _buildStatCard('Nouvelles', statusCounts['New'].toString(), Icons.new_releases, Colors.blue),
                     _buildStatCard('En cours', statusCounts['In Progress'].toString(), Icons.pending_actions, Colors.orange),
                     _buildStatCard('Terminées', statusCounts['Done'].toString(), Icons.check_circle, Colors.green),
-                    _buildStatCard('Durée moyenne', '${avgHours.toStringAsFixed(1)} heures', Icons.timer, Colors.purple),
+                    _buildStatCard('Durée moyenne', '\\${avgHours.toStringAsFixed(1)} heures', Icons.timer, Colors.purple),
                   ],
                 ),
                 SizedBox(height: 24),
@@ -254,7 +254,7 @@ class _AdminStatsDashboardState extends State<AdminStatsDashboard> with SingleTi
                                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                                 ),
                                 Text(
-                                  '${percentChange.toStringAsFixed(1)}%',
+                                  '\\${percentChange.toStringAsFixed(1)}%',
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import 'manager_dashboard.dart';
+import 'admin_dashboard.dart';
 import 'staff_dashboard.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -63,8 +63,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         }
       } else {
         if (mounted) {
-          if (user['role'] == 'manager') {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ManagerDashboard()));
+          if (user['role'] == 'admin') {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => AdminDashboard()));
           } else {
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => StaffDashboard()));
           }

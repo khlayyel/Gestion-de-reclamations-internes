@@ -114,3 +114,24 @@ exports.deleteReclamation = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la suppression', error });
   }
 };
+
+// Nouvelle route pour filtrer les réclamations selon le rôle
+exports.getReclamationsByUser = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
+
+    let reclamations;
+    if (user.role === 'admin') {
+      reclamations = await Reclamation.find();
+    } else if (user.role === 'staff') {
+      reclamations = await Reclamation.find({ departments: { $in: user.departments } });
+    } else {
+      reclamations = [];
+    }
+    res.json(reclamations);
+  } catch (err) {
+    res.status(500).json({ message: 'Erreur lors de la récupération des réclamations', error: err.message });
+  }
+};

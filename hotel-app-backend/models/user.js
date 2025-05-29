@@ -6,8 +6,8 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['staff', 'admin'], default: 'staff' },
-  department: {
-    type: String,
+  departments: {
+    type: [String],
     enum: ['Nettoyage', 'Réception', 'Maintenance', 'Sécurité', 'Restauration', 'Cuisine', 'Blanchisserie', 'Spa', 'Informatique', 'Direction'],
     required: function() { return this.role === 'staff'; }
   }

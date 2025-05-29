@@ -4,6 +4,7 @@ import 'reclamation.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../services/api_service.dart';
 
 class ReclamationsTab extends StatefulWidget {
   @override
@@ -28,9 +29,12 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
     _fetchReclamations();
   }
 
-  void _fetchReclamations() {
+  void _fetchReclamations() async {
+    String? userId = await ApiService.obtenirIdUtilisateurConnecte();
     setState(() {
-      _reclamations = ReclamationService.getReclamations();
+      _reclamations = userId != null
+        ? ReclamationService.getReclamationsByUser(userId)
+        : Future.value([]);
     });
   }
 

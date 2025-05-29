@@ -107,4 +107,15 @@ class ReclamationService {
       throw Exception('Erreur lors de la suppression de la réclamation');
     }
   }
+
+  static Future<List<Reclamation>> getReclamationsByUser(String userId) async {
+    final baseUrl = getBaseUrl();
+    final response = await http.get(Uri.parse('$baseUrl/api/reclamations/byUser?userId=$userId'));
+    if (response.statusCode == 200) {
+      List<dynamic> data = json.decode(response.body);
+      return data.map((e) => Reclamation.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to load filtered reclamations');
+    }
+  }
 }

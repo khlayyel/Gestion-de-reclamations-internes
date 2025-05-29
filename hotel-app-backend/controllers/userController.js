@@ -27,10 +27,9 @@ exports.createUser = async (req, res) => {
 
     let userData = { name, email, password, role: role || 'staff' };
     if (role === 'staff') {
-      // On prend le premier département sélectionné (ou adapter le modèle si tu veux plusieurs)
-      userData.department = departments[0];
+      userData.departments = departments;
     }
-    // Si admin, ne pas mettre de département
+    // Si admin, ne pas mettre de départements
 
     const newUser = new User(userData);
     await newUser.save();
@@ -71,7 +70,7 @@ exports.loginUser = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      department: user.department,
+      departments: user.departments || [],
     });
   } catch (err) {
     res.status(500).json({ message: 'Erreur serveur' });
@@ -80,10 +79,17 @@ exports.loginUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
+    const { role, departments } = req.body;
+    let updateData = { ...req.body };
+    if (role === 'staff') {
+      updateData.departments = departments;
+    } else if (role === 'admin') {
+      updateData.departments = undefined;
+    }
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
-      req.body,
-      { new: true } // renvoie le document modifié
+      updateData,
+      { new: true }
     );
     if (!updatedUser) {
       return res.status(404).json({ message: 'Utilisateur non trouvé' });
