@@ -47,24 +47,24 @@ class _ReclamationFormState extends State<ReclamationForm> {
     {'value': 1, 'label': 'Haute', 'color': Colors.red},
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _getUserName();
-    // Initialiser avec une liste vide au lieu de tous les départements
-    _departments = [];
-  }
-
-  // Fonction pour récupérer le nom de l'utilisateur connecté
-  void _getUserName() async {
-    String? name = await ApiService.obtenirNomUtilisateurConnecte();
-    if (name != null) {
+  // Fonction pour récupérer l'email de l'utilisateur connecté
+  void _getUserEmail() async {
+    String? email = await ApiService.obtenirEmailUtilisateurConnecte();
+    if (email != null) {
       setState(() {
-        _createdBy = name;
+        _createdBy = email;
       });
     } else {
       print("Aucun utilisateur connecté");
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserEmail();
+    // Initialiser avec une liste vide au lieu de tous les départements
+    _departments = [];
   }
 
   // Fonction pour soumettre le formulaire

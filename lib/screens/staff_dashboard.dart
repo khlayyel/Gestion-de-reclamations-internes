@@ -166,7 +166,7 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
         }
         break;
       case 1: // Mes réclamations
-        filtered = filtered.where((r) => r.createdBy == _userName).toList();
+        filtered = filtered.where((r) => r.createdBy == _userEmail).toList();
         break;
       case 2: // Prises en charge
         filtered = filtered.where((r) => r.assignedTo == _userName && r.status != 'Done').toList();
