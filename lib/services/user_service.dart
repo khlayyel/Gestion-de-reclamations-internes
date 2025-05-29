@@ -28,13 +28,15 @@ class UserService {
   }
 
   static Future<void> createUser(Map<String, dynamic> userData, BuildContext context) async {
+    final body = <String, dynamic>{
+      ...userData,
+      if (userData['departments'] != null && userData['departments'] is List && (userData['departments'] as List).isNotEmpty)
+        'departments': List<String>.from(userData['departments']),
+    };
     final response = await http.post(
       Uri.parse('$baseUrl/api/users/create'),
       headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        ...userData,
-        'departments': userData['departments'] != null ? List<String>.from(userData['departments']) : [],
-      }),
+      body: json.encode(body),
     );
     if (response.statusCode == 201) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Utilisateur créé avec succès')));
@@ -45,13 +47,15 @@ class UserService {
   }
 
   static Future<void> updateUser(String id, Map<String, dynamic> userData, BuildContext context) async {
+    final body = <String, dynamic>{
+      ...userData,
+      if (userData['departments'] != null && userData['departments'] is List && (userData['departments'] as List).isNotEmpty)
+        'departments': List<String>.from(userData['departments']),
+    };
     final response = await http.put(
       Uri.parse('$baseUrl/api/users/update/$id'),
       headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        ...userData,
-        'departments': userData['departments'] != null ? List<String>.from(userData['departments']) : [],
-      }),
+      body: json.encode(body),
     );
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Utilisateur modifié avec succès')));

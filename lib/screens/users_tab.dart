@@ -403,14 +403,16 @@ class _UserFormDialogState extends State<UserFormDialog> {
     _emailController = TextEditingController(text: widget.user?['email'] ?? '');
     _passwordController = TextEditingController();
     _role = widget.user?['role'] ?? 'staff';
-    if (_role == 'staff') {
-      if (widget.user?['departments'] != null) {
+    if (widget.user?['departments'] != null) {
+      if (widget.user!['departments'] is List) {
         _selectedDepartments = List<String>.from(widget.user!['departments']);
-      } else if (widget.user?['department'] != null) {
-        _selectedDepartments = [widget.user!['department']];
+      } else if (widget.user!['departments'] is String) {
+        _selectedDepartments = [widget.user!['departments']];
       } else {
         _selectedDepartments = [];
       }
+    } else if (widget.user?['department'] != null) {
+      _selectedDepartments = [widget.user!['department']];
     } else {
       _selectedDepartments = [];
     }
@@ -426,12 +428,14 @@ class _UserFormDialogState extends State<UserFormDialog> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    final userData = {
+    final Map<String, dynamic> userData = {
       'name': _nameController.text,
       'email': _emailController.text,
       'role': _role,
-      'departments': _role == 'staff' ? _selectedDepartments.toList() : [],
     };
+    if (_role == 'staff') {
+      userData['departments'] = List<String>.from(_selectedDepartments);
+    }
     if (widget.user == null) {
       userData['password'] = _passwordController.text;
       final exists = await UserService.checkEmailExists(_emailController.text);

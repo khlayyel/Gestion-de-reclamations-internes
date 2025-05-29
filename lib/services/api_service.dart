@@ -26,11 +26,13 @@ class ApiService {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
         final prefs = await SharedPreferences.getInstance();
         
+        String userId = responseData['id'] ?? responseData['_id'] ?? '';
         String userName = responseData['name'];
         String userEmail = responseData['email'];
         String userRole = responseData['role'] ?? 'staff';
         List<String> userDepartments = List<String>.from(responseData['departments'] ?? []);
         
+        await prefs.setString('userId', userId);
         await prefs.setString('userName', userName);
         await prefs.setString('userEmail', userEmail);
         await prefs.setString('userRole', userRole);
