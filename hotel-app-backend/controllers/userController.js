@@ -2,20 +2,23 @@ const User = require('../models/user');
 
 // Créer un nouvel utilisateur
 exports.createUser = async (req, res) => {
-  const { name, email, password, role, departments } = req.body;
+  const { name, email, password, role, department } = req.body;
 
-  console.log(req.body);
+  console.log('Données reçues:', req.body);
 
   try {
-    // Validate required fields
-    if (!name || !email || !password || !departments || departments.length === 0) {
+    // Validation des champs requis
+    if (!name || !email || !password || !department) {
       return res.status(400).json({ 
         message: 'Tous les champs sont requis (nom, email, mot de passe, département)' 
       });
     }
 
-    // departments[0] doit être en français (voir enum du modèle)
-    const department = departments[0];
+    // Vérifier si l'email existe déjà
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Cet email est déjà utilisé' });
+    }
 
     const newUser = new User({ 
       name, 
@@ -26,10 +29,11 @@ exports.createUser = async (req, res) => {
     });
     
     await newUser.save();
+    console.log('Utilisateur créé avec succès:', newUser);
     res.status(201).json(newUser);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Erreur lors de la création de l\'utilisateur', error });
+    console.error('Erreur lors de la création:', error);
+    res.status(500).json({ message: 'Erreur lors de la création de l\'utilisateur', error: error.message });
   }
 };
 
