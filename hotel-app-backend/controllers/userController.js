@@ -2,15 +2,20 @@ const User = require('../models/user');
 
 // Créer un nouvel utilisateur
 exports.createUser = async (req, res) => {
-  const { name, email, password, role, department } = req.body;
+  const { name, email, password, role, departments } = req.body;
 
   console.log('Données reçues:', req.body);
 
   try {
     // Validation des champs requis
-    if (!name || !email || !password || !department) {
+    if (!name || !email || !password) {
       return res.status(400).json({ 
-        message: 'Tous les champs sont requis (nom, email, mot de passe, département)' 
+        message: 'Tous les champs sont requis (nom, email, mot de passe)' 
+      });
+    }
+    if (role === 'staff' && (!departments || !departments.length)) {
+      return res.status(400).json({ 
+        message: 'Le staff doit avoir au moins un département' 
       });
     }
 
@@ -20,14 +25,14 @@ exports.createUser = async (req, res) => {
       return res.status(400).json({ message: 'Cet email est déjà utilisé' });
     }
 
-    const newUser = new User({ 
-      name, 
-      email, 
-      password, 
-      role: role || 'staff',
-      department 
-    });
-    
+    let userData = { name, email, password, role: role || 'staff' };
+    if (role === 'staff') {
+      // On prend le premier département sélectionné (ou adapter le modèle si tu veux plusieurs)
+      userData.department = departments[0];
+    }
+    // Si admin, ne pas mettre de département
+
+    const newUser = new User(userData);
     await newUser.save();
     console.log('Utilisateur créé avec succès:', newUser);
     res.status(201).json(newUser);

@@ -5,11 +5,11 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['staff', 'manager'], default: 'staff' },
+  role: { type: String, enum: ['staff', 'admin'], default: 'staff' },
   department: {
     type: String,
     enum: ['Nettoyage', 'Réception', 'Maintenance', 'Sécurité', 'Restauration', 'Cuisine', 'Blanchisserie', 'Spa', 'Informatique', 'Direction'],
-    required: true
+    required: function() { return this.role === 'staff'; }
   }
 }, { timestamps: true });
 

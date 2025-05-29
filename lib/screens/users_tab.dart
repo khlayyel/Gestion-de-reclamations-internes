@@ -13,10 +13,10 @@ class _UsersTabState extends State<UsersTab> {
   String? _selectedRole;
   String? _selectedDepartment;
 
-  final List<String> _roles = ['staff', 'manager'];
+  final List<String> _roles = ['staff', 'admin'];
   final List<String> _departments = [
-    'Housekeeping', 'Reception', 'Maintenance', 'Security',
-    'Food & Beverage', 'Kitchen', 'Laundry', 'Spa', 'IT', 'Management'
+    'Nettoyage', 'Réception', 'Maintenance', 'Sécurité',
+    'Restauration', 'Cuisine', 'Blanchisserie', 'Spa', 'Informatique', 'Direction'
   ];
 
   @override
@@ -144,7 +144,7 @@ class _UsersTabState extends State<UsersTab> {
                                   items: [null, ..._roles].map((role) {
                                     return DropdownMenuItem<String>(
                                       value: role,
-                                      child: Text(role ?? 'Tous', style: TextStyle(color: Colors.grey[800])),
+                                      child: Text(role == 'admin' ? 'Admin' : 'Staff', style: TextStyle(color: Colors.grey[800])),
                                     );
                                   }).toList(),
                                   onChanged: (val) {
@@ -388,10 +388,10 @@ class _UserFormDialogState extends State<UserFormDialog> {
   late TextEditingController _passwordController;
   String _role = 'staff';
   List<String> _selectedDepartments = [];
-  final List<String> _roles = ['staff', 'manager'];
+  final List<String> _roles = ['staff', 'admin'];
   final List<String> _departments = [
-    'Housekeeping', 'Reception', 'Maintenance', 'Security',
-    'Food & Beverage', 'Kitchen', 'Laundry', 'Spa', 'IT', 'Management'
+    'Nettoyage', 'Réception', 'Maintenance', 'Sécurité',
+    'Restauration', 'Cuisine', 'Blanchisserie', 'Spa', 'Informatique', 'Direction'
   ];
 
   @override
@@ -403,7 +403,7 @@ class _UserFormDialogState extends State<UserFormDialog> {
     _role = widget.user?['role'] ?? 'staff';
     _selectedDepartments = widget.user?['departments'] != null 
         ? List<String>.from(widget.user!['departments'])
-        : ['Housekeeping'];
+        : ['Nettoyage'];
   }
 
   @override
@@ -420,8 +420,10 @@ class _UserFormDialogState extends State<UserFormDialog> {
       'name': _nameController.text,
       'email': _emailController.text,
       'role': _role,
-      'departments': _selectedDepartments,
     };
+    if (_role == 'staff') {
+      userData['departments'] = _selectedDepartments;
+    }
     if (widget.user == null) {
       userData['password'] = _passwordController.text;
       final exists = await UserService.checkEmailExists(_emailController.text);
@@ -506,7 +508,7 @@ class _UserFormDialogState extends State<UserFormDialog> {
                 SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: _role,
-                  items: _roles.map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
+                  items: _roles.map((r) => DropdownMenuItem(value: r, child: Text(r == 'admin' ? 'Admin' : 'Staff'))).toList(),
                   onChanged: (v) => setState(() => _role = v!),
                   decoration: InputDecoration(
                     labelText: 'Rôle',
@@ -517,57 +519,58 @@ class _UserFormDialogState extends State<UserFormDialog> {
                   ),
                 ),
                 SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade400),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Row(
-                          children: [
-                            Icon(Icons.business, color: Colors.grey[600]),
-                            SizedBox(width: 8),
-                            Text(
-                              'Départements',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 16,
+                if (_role == 'staff')
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade400),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            children: [
+                              Icon(Icons.business, color: Colors.grey[600]),
+                              SizedBox(width: 8),
+                              Text(
+                                'Départements',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 16,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      Divider(height: 1),
-                      Container(
-                        constraints: BoxConstraints(maxHeight: 200),
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: _departments.length,
-                          itemBuilder: (context, index) {
-                            final department = _departments[index];
-                            return CheckboxListTile(
-                              title: Text(department),
-                              value: _selectedDepartments.contains(department),
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  if (value == true) {
-                                    _selectedDepartments.add(department);
-                                  } else {
-                                    _selectedDepartments.remove(department);
-                                  }
-                                });
-                              },
-                            );
-                          },
+                        Divider(height: 1),
+                        Container(
+                          constraints: BoxConstraints(maxHeight: 200),
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: _departments.length,
+                            itemBuilder: (context, index) {
+                              final department = _departments[index];
+                              return CheckboxListTile(
+                                title: Text(department),
+                                value: _selectedDepartments.contains(department),
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    if (value == true) {
+                                      _selectedDepartments.add(department);
+                                    } else {
+                                      _selectedDepartments.remove(department);
+                                    }
+                                  });
+                                },
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           ),
