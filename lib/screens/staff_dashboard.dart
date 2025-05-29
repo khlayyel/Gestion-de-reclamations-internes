@@ -7,6 +7,7 @@ import 'reclamation.dart';
 import '../services/api_service.dart';
 import 'dart:async';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:hotel_staff_app/screens/login_screen.dart';
 
 class StaffDashboard extends StatefulWidget {
   @override
@@ -757,6 +758,20 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
             letterSpacing: 0.5,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            tooltip: 'Déconnexion',
+            onPressed: () async {
+              await ApiService.logout();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => LoginScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,

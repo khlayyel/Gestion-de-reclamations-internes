@@ -3,6 +3,7 @@ import 'reclamations_tab.dart';
 import 'users_tab.dart';
 import 'admin_stats_dashboard.dart';
 import '../services/api_service.dart';
+import '../screens/login_screen.dart';
 
 class AdminDashboard extends StatefulWidget {
   @override
@@ -64,6 +65,26 @@ class _AdminDashboardState extends State<AdminDashboard> with SingleTickerProvid
     }
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(_pageTitles[_selectedPage]),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            tooltip: 'Déconnexion',
+            onPressed: () async {
+              await ApiService.logout();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => LoginScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0,
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(

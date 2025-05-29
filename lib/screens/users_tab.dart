@@ -436,8 +436,10 @@ class _UserFormDialogState extends State<UserFormDialog> {
     if (_role == 'staff') {
       userData['departments'] = List<String>.from(_selectedDepartments);
     }
+    String? adminName = await UserService.getConnectedUserName();
     if (widget.user == null) {
       userData['password'] = _passwordController.text;
+      userData['ajoutePar'] = adminName;
       final exists = await UserService.checkEmailExists(_emailController.text);
       if (exists) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Cet email existe déjà.')));
@@ -448,6 +450,7 @@ class _UserFormDialogState extends State<UserFormDialog> {
       if (_passwordController.text.isNotEmpty) {
         userData['password'] = _passwordController.text;
       }
+      userData['modifiePar'] = adminName;
       await UserService.updateUser(widget.user!['_id'], userData, context);
     }
     Navigator.of(context).pop(true);
