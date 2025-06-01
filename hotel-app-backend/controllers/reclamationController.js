@@ -1,5 +1,48 @@
 const Reclamation = require('../models/reclamation');
 const User = require('../models/user');
+const nodemailer = require('nodemailer');
+
+// Service d'envoi d'email
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+async function sendReclamationNotification(reclamation, emails) {
+  const { objet, description, departments, priority, status, location, createdBy } = reclamation;
+  const subject = "Nouvelle Réclamation";
+  const body = `
+    <h2>Nouvelle réclamation créée</h2>
+    <p><b>Objet :</b> ${objet}</p>
+    <p><b>Description :</b> ${description}</p>
+    <p><b>Départements concernés :</b> ${departments.join(', ')}</p>
+    <p><b>Priorité :</b> ${priority}</p>
+    <p><b>Statut :</b> ${status}</p>
+    <p><b>Emplacement :</b> ${location}</p>
+    <p><b>Créée par :</b> ${createdBy}</p>
+    <a href="https://reclamations-internes.vercel.app/" style="display:inline-block;padding:12px 24px;background:#1976d2;color:#fff;text-decoration:none;border-radius:6px;margin-top:16px;font-weight:bold;">Accéder à l'application de réclamation</a>
+  `;
+  console.log('--- [ENVOI EMAIL RECLAMATION] ---');
+  console.log('Début de l\'envoi des emails de notification...');
+  console.log('Emails ciblés :', emails);
+  for (const email of emails) {
+    try {
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject,
+        html: body
+      });
+      console.log(`Email envoyé avec succès à : ${email}`);
+    } catch (err) {
+      console.error(`Erreur lors de l'envoi à ${email} :`, err);
+    }
+  }
+  console.log('--- [FIN ENVOI EMAIL RECLAMATION] ---');
+}
 
 exports.createReclamation = async (req, res) => {
   try {
@@ -15,6 +58,16 @@ exports.createReclamation = async (req, res) => {
 
     const reclamation = new Reclamation(reclamationData);
     await reclamation.save();
+
+    // Notifier tous les admins et staffs concernés
+    const admins = await User.find({ role: 'admin' });
+    const staffs = await User.find({ role: 'staff', departments: { $in: reclamation.departments } });
+    const emails = [
+      ...admins.map(a => a.email),
+      ...staffs.map(s => s.email)
+    ].filter((v, i, a) => a.indexOf(v) === i);
+    await sendReclamationNotification(reclamation, emails);
+
     // Émettre l'événement WebSocket
     req.app.get('io').emit('reclamationsUpdated');
     res.status(201).json(reclamation);

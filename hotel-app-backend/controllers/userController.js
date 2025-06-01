@@ -29,6 +29,10 @@ exports.createUser = async (req, res) => {
     if (role === 'staff') {
       userData.departments = departments;
     }
+    // Ajout du champ ajoutePar si fourni
+    if (req.body.ajoutePar) {
+      userData.ajoutePar = req.body.ajoutePar;
+    }
     // Si admin, ne pas mettre de départements
 
     const newUser = new User(userData);
@@ -85,6 +89,10 @@ exports.updateUser = async (req, res) => {
       updateData.departments = departments;
     } else if (role === 'admin') {
       updateData.departments = undefined;
+    }
+    // Ajout du champ modifiePar si fourni
+    if (req.body.modifiePar) {
+      updateData.modifiePar = req.body.modifiePar;
     }
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,

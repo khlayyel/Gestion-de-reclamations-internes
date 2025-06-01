@@ -10,7 +10,9 @@ const userSchema = new mongoose.Schema({
     type: [String],
     enum: ['Nettoyage', 'Réception', 'Maintenance', 'Sécurité', 'Restauration', 'Cuisine', 'Blanchisserie', 'Spa', 'Informatique', 'Direction'],
     required: function() { return this.role === 'staff'; }
-  }
+  },
+  ajoutePar: { type: String },
+  modifiePar: { type: String }
 }, { timestamps: true });
 
 
