@@ -88,301 +88,312 @@ class _UsersTabState extends State<UsersTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Column(
+    final isWide = MediaQuery.of(context).size.width > 900;
+    final maxWidth = isWide ? 800.0 : double.infinity;
+    final horizontalPadding = isWide ? 0.0 : 8.0;
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: Stack(
           children: [
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    spreadRadius: 1,
-                    blurRadius: 10,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Rechercher un utilisateur',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onChanged: _filterUsers,
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 4, bottom: 8),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.work, size: 16, color: Colors.grey[600]),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'Rôle',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey.shade300),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _selectedRole,
-                                  hint: Text('Tous les rôles', style: TextStyle(color: Colors.grey[600])),
-                                  isExpanded: true,
-                                  items: [null, ..._roles].map((role) {
-                                    return DropdownMenuItem<String>(
-                                      value: role,
-                                      child: Text(role == 'admin' ? 'Admin' : 'Staff', style: TextStyle(color: Colors.grey[800])),
-                                    );
-                                  }).toList(),
-                                  onChanged: (val) {
-                                    setState(() => _selectedRole = val);
-                                    _applyFilters();
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 4, bottom: 8),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.business, size: 16, color: Colors.grey[600]),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'Département',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey.shade300),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _selectedDepartment,
-                                  hint: Text('Tous les départements', style: TextStyle(color: Colors.grey[600])),
-                                  isExpanded: true,
-                                  items: [null, ..._departments].map((dept) {
-                                    return DropdownMenuItem<String>(
-                                      value: dept,
-                                      child: Text(dept ?? 'Tous', style: TextStyle(color: Colors.grey[800])),
-                                    );
-                                  }).toList(),
-                                  onChanged: (val) {
-                                    setState(() => _selectedDepartment = val);
-                                    _applyFilters();
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: FutureBuilder<List<dynamic>>(
-                future: _users,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Erreur: ${snapshot.error}'));
-                  }
-                  if (!snapshot.hasData || _filteredUsers.isEmpty) {
-                    return Center(child: Text('Aucun utilisateur trouvé.'));
-                  }
-                  return ListView.builder(
+            Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: Container(
                     padding: EdgeInsets.all(16),
-                    itemCount: _filteredUsers.length,
-                    itemBuilder: (context, index) {
-                      final user = _filteredUsers[index];
-                      return Card(
-                        elevation: 2,
-                        margin: EdgeInsets.only(bottom: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          spreadRadius: 1,
+                          blurRadius: 10,
+                          offset: Offset(0, 2),
                         ),
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        TextField(
+                          decoration: InputDecoration(
+                            labelText: 'Rechercher un utilisateur',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onChanged: _filterUsers,
+                        ),
+                        SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  CircleAvatar(
-                                    backgroundColor: Colors.blue.shade100,
-                                    child: Text(
-                                      (user['name'] ?? '')[0].toUpperCase(),
-                                      style: TextStyle(
-                                        color: Colors.blue.shade700,
-                                        fontWeight: FontWeight.bold,
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 4, bottom: 8),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.work, size: 16, color: Colors.grey[600]),
+                                        SizedBox(width: 4),
+                                        Text(
+                                          'Rôle',
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 12),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey.shade300),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        value: _selectedRole,
+                                        hint: Text('Tous les rôles', style: TextStyle(color: Colors.grey[600])),
+                                        isExpanded: true,
+                                        items: [null, ..._roles].map((role) {
+                                          return DropdownMenuItem<String>(
+                                            value: role,
+                                            child: Text(role == 'admin' ? 'Admin' : 'Staff', style: TextStyle(color: Colors.grey[800])),
+                                          );
+                                        }).toList(),
+                                        onChanged: (val) {
+                                          setState(() => _selectedRole = val);
+                                          _applyFilters();
+                                        },
                                       ),
                                     ),
                                   ),
-                                  SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 4, bottom: 8),
+                                    child: Row(
                                       children: [
+                                        Icon(Icons.business, size: 16, color: Colors.grey[600]),
+                                        SizedBox(width: 4),
                                         Text(
-                                          user['name'] ?? '',
+                                          'Département',
                                           style: TextStyle(
-                                            fontSize: 18,
+                                            color: Colors.grey[600],
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 12),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey.shade300),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        value: _selectedDepartment,
+                                        hint: Text('Tous les départements', style: TextStyle(color: Colors.grey[600])),
+                                        isExpanded: true,
+                                        items: [null, ..._departments].map((dept) {
+                                          return DropdownMenuItem<String>(
+                                            value: dept,
+                                            child: Text(dept ?? 'Tous', style: TextStyle(color: Colors.grey[800])),
+                                          );
+                                        }).toList(),
+                                        onChanged: (val) {
+                                          setState(() => _selectedDepartment = val);
+                                          _applyFilters();
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: FutureBuilder<List<dynamic>>(
+                    future: _users,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Erreur: ${snapshot.error}'));
+                      }
+                      if (!snapshot.hasData || _filteredUsers.isEmpty) {
+                        return Center(child: Text('Aucun utilisateur trouvé.'));
+                      }
+                      return ListView.builder(
+                        padding: EdgeInsets.all(16),
+                        itemCount: _filteredUsers.length,
+                        itemBuilder: (context, index) {
+                          final user = _filteredUsers[index];
+                          return Card(
+                            elevation: 2,
+                            margin: EdgeInsets.only(bottom: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      CircleAvatar(
+                                        backgroundColor: Colors.blue.shade100,
+                                        child: Text(
+                                          (user['name'] ?? '')[0].toUpperCase(),
+                                          style: TextStyle(
+                                            color: Colors.blue.shade700,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          user['email'] ?? '',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 14,
-                                          ),
+                                      ),
+                                      SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              user['name'] ?? '',
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            SizedBox(height: 4),
+                                            Text(
+                                              user['email'] ?? '',
+                                              style: TextStyle(
+                                                color: Colors.grey[600],
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 16),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue.shade50,
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.work, size: 16, color: Colors.blue.shade700),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              user['role'] ?? '',
+                                              style: TextStyle(
+                                                color: Colors.blue.shade700,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Container(
+                                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.shade50,
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.business, size: 16, color: Colors.green.shade700),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              (user['departments'] != null)
+                                                  ? (user['departments'] as List).join(', ')
+                                                  : '',
+                                              style: TextStyle(
+                                                color: Colors.green.shade700,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 16),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      TextButton.icon(
+                                        icon: Icon(Icons.edit, size: 20),
+                                        label: Text('Modifier'),
+                                        onPressed: () => _showUserForm(user: user),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.blue.shade700,
+                                        ),
+                                      ),
+                                      SizedBox(width: 8),
+                                      TextButton.icon(
+                                        icon: Icon(Icons.delete, size: 20),
+                                        label: Text('Supprimer'),
+                                        onPressed: () => _deleteUser(user['_id']),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.red.shade700,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: Colors.blue.shade50,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.work, size: 16, color: Colors.blue.shade700),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          user['role'] ?? '',
-                                          style: TextStyle(
-                                            color: Colors.blue.shade700,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(width: 8),
-                                  Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.shade50,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.business, size: 16, color: Colors.green.shade700),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          (user['departments'] != null)
-                                              ? (user['departments'] as List).join(', ')
-                                              : '',
-                                          style: TextStyle(
-                                            color: Colors.green.shade700,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  TextButton.icon(
-                                    icon: Icon(Icons.edit, size: 20),
-                                    label: Text('Modifier'),
-                                    onPressed: () => _showUserForm(user: user),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Colors.blue.shade700,
-                                    ),
-                                  ),
-                                  SizedBox(width: 8),
-                                  TextButton.icon(
-                                    icon: Icon(Icons.delete, size: 20),
-                                    label: Text('Supprimer'),
-                                    onPressed: () => _deleteUser(user['_id']),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Colors.red.shade700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       );
                     },
-                  );
-                },
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: FloatingActionButton(
+                onPressed: () => _showUserForm(),
+                child: Icon(Icons.add),
+                backgroundColor: Colors.blue.shade700,
               ),
             ),
           ],
         ),
-        Positioned(
-          bottom: 16,
-          right: 16,
-          child: FloatingActionButton(
-            onPressed: () => _showUserForm(),
-            child: Icon(Icons.add),
-            backgroundColor: Colors.blue.shade700,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

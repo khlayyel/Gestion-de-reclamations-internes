@@ -238,6 +238,10 @@ class _ReclamationFormState extends State<ReclamationForm> {
       );
     }
 
+    final isWide = MediaQuery.of(context).size.width > 700;
+    final maxWidth = isWide ? 600.0 : double.infinity;
+    final horizontalPadding = isWide ? 0.0 : 16.0;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Créer une réclamation'),
@@ -245,246 +249,251 @@ class _ReclamationFormState extends State<ReclamationForm> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade50, Colors.white],
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Informations principales',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade800,
-                            ),
-                          ),
-                          SizedBox(height: 16),
-                          TextFormField(
-                            decoration: InputDecoration(
-                              labelText: 'Objet',
-                              prefixIcon: Icon(Icons.title),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              filled: true,
-                              fillColor: Colors.white,
-                            ),
-                            validator: (value) => value!.isEmpty ? 'L\'objet est requis' : null,
-                            onSaved: (value) => _objet = value!,
-                          ),
-                          SizedBox(height: 16),
-                          TextFormField(
-                            decoration: InputDecoration(
-                              labelText: 'Description',
-                              prefixIcon: Icon(Icons.description),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              filled: true,
-                              fillColor: Colors.white,
-                            ),
-                            maxLines: 3,
-                            validator: (value) => value!.isEmpty ? 'La description est requise' : null,
-                            onSaved: (value) => _description = value!,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Détails',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade800,
-                            ),
-                          ),
-                          SizedBox(height: 16),
-                          TextFormField(
-                            decoration: InputDecoration(
-                              labelText: 'Emplacement',
-                              prefixIcon: Icon(Icons.location_on),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              filled: true,
-                              fillColor: Colors.white,
-                            ),
-                            validator: (value) => value!.isEmpty ? 'L\'emplacement est requis' : null,
-                            onSaved: (value) => _location = value!,
-                          ),
-                          SizedBox(height: 16),
-                          // Ajout du sélecteur de priorité
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Priorité',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[700],
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Row(
-                                children: _priorityOptions.map((priority) {
-                                  return Expanded(
-                                    child: Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 4),
-                                      child: InkWell(
-                                        onTap: () {
-                                          setState(() {
-                                            _priority = priority['value'];
-                                          });
-                                        },
-                                        child: Container(
-                                          padding: EdgeInsets.symmetric(vertical: 12),
-                                          decoration: BoxDecoration(
-                                            color: _priority == priority['value']
-                                                ? priority['color'].withOpacity(0.1)
-                                                : Colors.grey.shade100,
-                                            border: Border.all(
-                                              color: _priority == priority['value']
-                                                  ? priority['color']
-                                                  : Colors.grey.shade300,
-                                              width: _priority == priority['value'] ? 2 : 1,
-                                            ),
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          child: Column(
-                                            children: [
-                                              Icon(
-                                                Icons.flag,
-                                                color: priority['color'],
-                                                size: 24,
-                                              ),
-                                              SizedBox(height: 4),
-                                              Text(
-                                                priority['label'],
-                                                style: TextStyle(
-                                                  color: priority['color'],
-                                                  fontWeight: _priority == priority['value']
-                                                      ? FontWeight.bold
-                                                      : FontWeight.normal,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Départements concernés',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade800,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Sélectionnez au moins un département',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          ..._availableDepartments.map((String dept) {
-                            return CheckboxListTile(
-                              title: Text(dept),
-                              value: _departments.contains(dept),
-                              activeColor: Colors.blue,
-                              checkColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              onChanged: (bool? selected) {
-                                setState(() {
-                                  if (selected != null && selected) {
-                                    _departments.add(dept);
-                                  } else {
-                                    _departments.remove(dept);
-                                  }
-                                });
-                              },
-                            );
-                          }).toList(),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _submitForm,
-                      icon: Icon(Icons.add_circle),
-                      label: Text('Créer la réclamation'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 16),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.blue.shade50, Colors.white],
+              ),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16.0),
+              child: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Card(
+                        elevation: 4,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        elevation: 4,
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Informations principales',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue.shade800,
+                                ),
+                              ),
+                              SizedBox(height: 16),
+                              TextFormField(
+                                decoration: InputDecoration(
+                                  labelText: 'Objet',
+                                  prefixIcon: Icon(Icons.title),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                ),
+                                validator: (value) => value!.isEmpty ? 'L\'objet est requis' : null,
+                                onSaved: (value) => _objet = value!,
+                              ),
+                              SizedBox(height: 16),
+                              TextFormField(
+                                decoration: InputDecoration(
+                                  labelText: 'Description',
+                                  prefixIcon: Icon(Icons.description),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                ),
+                                maxLines: 3,
+                                validator: (value) => value!.isEmpty ? 'La description est requise' : null,
+                                onSaved: (value) => _description = value!,
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                      SizedBox(height: 16),
+                      Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Détails',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue.shade800,
+                                ),
+                              ),
+                              SizedBox(height: 16),
+                              TextFormField(
+                                decoration: InputDecoration(
+                                  labelText: 'Emplacement',
+                                  prefixIcon: Icon(Icons.location_on),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                ),
+                                validator: (value) => value!.isEmpty ? 'L\'emplacement est requis' : null,
+                                onSaved: (value) => _location = value!,
+                              ),
+                              SizedBox(height: 16),
+                              // Ajout du sélecteur de priorité
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Priorité',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[700],
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Row(
+                                    children: _priorityOptions.map((priority) {
+                                      return Expanded(
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(horizontal: 4),
+                                          child: InkWell(
+                                            onTap: () {
+                                              setState(() {
+                                                _priority = priority['value'];
+                                              });
+                                            },
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(vertical: 12),
+                                              decoration: BoxDecoration(
+                                                color: _priority == priority['value']
+                                                    ? priority['color'].withOpacity(0.1)
+                                                    : Colors.grey.shade100,
+                                                border: Border.all(
+                                                  color: _priority == priority['value']
+                                                      ? priority['color']
+                                                      : Colors.grey.shade300,
+                                                  width: _priority == priority['value'] ? 2 : 1,
+                                                ),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: Column(
+                                                children: [
+                                                  Icon(
+                                                    Icons.flag,
+                                                    color: priority['color'],
+                                                    size: 24,
+                                                  ),
+                                                  SizedBox(height: 4),
+                                                  Text(
+                                                    priority['label'],
+                                                    style: TextStyle(
+                                                      color: priority['color'],
+                                                      fontWeight: _priority == priority['value']
+                                                          ? FontWeight.bold
+                                                          : FontWeight.normal,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Départements concernés',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue.shade800,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Sélectionnez au moins un département',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              ..._availableDepartments.map((String dept) {
+                                return CheckboxListTile(
+                                  title: Text(dept),
+                                  value: _departments.contains(dept),
+                                  activeColor: Colors.blue,
+                                  checkColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  onChanged: (bool? selected) {
+                                    setState(() {
+                                      if (selected != null && selected) {
+                                        _departments.add(dept);
+                                      } else {
+                                        _departments.remove(dept);
+                                      }
+                                    });
+                                  },
+                                );
+                              }).toList(),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _submitForm,
+                          icon: Icon(Icons.add_circle),
+                          label: Text('Créer la réclamation'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 4,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
