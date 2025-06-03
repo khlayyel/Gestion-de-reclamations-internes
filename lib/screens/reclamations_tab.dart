@@ -17,6 +17,7 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
   String? _selectedDepartment;
   DateTime? _startDate;
   DateTime? _endDate;
+  String? _userRole;
   final List<String> _statusOptions = ['New', 'In Progress', 'Done'];
   final List<String> _departmentOptions = ['Nettoyage', 'Réception', 'Maintenance', 'Sécurité', 'Restauration', 'Cuisine', 'Blanchisserie', 'Spa', 'Informatique', 'Direction'];
   
@@ -27,6 +28,7 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
   void initState() {
     super.initState();
     _fetchReclamations();
+    _fetchUserRole();
   }
 
   void _fetchReclamations() async {
@@ -35,6 +37,13 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
       _reclamations = userId != null
         ? ReclamationService.getReclamationsByUser(userId)
         : Future.value([]);
+    });
+  }
+
+  void _fetchUserRole() async {
+    String? role = await ApiService.obtenirRoleUtilisateurConnecte();
+    setState(() {
+      _userRole = role;
     });
   }
 
@@ -120,6 +129,8 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
               SizedBox(height: 16),
               _buildDetailRow('Description', reclamation.description),
               SizedBox(height: 16),
+              _buildDetailRow('Créé par', reclamation.createdBy),
+              SizedBox(height: 16),
               _buildDetailRow('Emplacement', reclamation.location),
               SizedBox(height: 16),
               _buildDetailRow('Départements', reclamation.departments.join(', ')),
@@ -199,375 +210,391 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
     final isWide = MediaQuery.of(context).size.width > 1000;
     final maxWidth = isWide ? 900.0 : double.infinity;
     final horizontalPadding = isWide ? 0.0 : 8.0;
-    return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: maxWidth),
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          spreadRadius: 1,
-                          blurRadius: 10,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 4, bottom: 8),
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.filter_list, size: 16, color: Colors.grey[600]),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          'Status',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 12),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey.shade300),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: DropdownButtonHideUnderline(
-                                      child: DropdownButton<String>(
-                                        value: _selectedStatus,
-                                        hint: Text('Sélectionner', style: TextStyle(color: Colors.grey[600])),
-                                        isExpanded: true,
-                                        items: [null, ..._statusOptions].map((status) {
-                                          return DropdownMenuItem<String>(
-                                            value: status,
-                                            child: Text(status ?? 'Tous', style: TextStyle(color: Colors.grey[800])),
-                                          );
-                                        }).toList(),
-                                        onChanged: (val) => setState(() => _selectedStatus = val),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 4, bottom: 8),
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.business, size: 16, color: Colors.grey[600]),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          'Département',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 12),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey.shade300),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: DropdownButtonHideUnderline(
-                                      child: DropdownButton<String>(
-                                        value: _selectedDepartment,
-                                        hint: Text('Sélectionner', style: TextStyle(color: Colors.grey[600])),
-                                        isExpanded: true,
-                                        items: [null, ..._departmentOptions].map((dept) {
-                                          return DropdownMenuItem<String>(
-                                            value: dept,
-                                            child: Text(dept ?? 'Tous', style: TextStyle(color: Colors.grey[800])),
-                                          );
-                                        }).toList(),
-                                        onChanged: (val) => setState(() => _selectedDepartment = val),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 12),
-                        InkWell(
-                          onTap: _pickDateRange,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade300),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
+    return Scaffold(
+      floatingActionButton: (_userRole == 'admin')
+          ? FloatingActionButton(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ReclamationForm()),
+                );
+                if (result == true) _fetchReclamations();
+              },
+              child: Icon(Icons.add),
+              backgroundColor: Colors.blue,
+              tooltip: 'Créer une réclamation',
+            )
+          : null,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                    child: Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            spreadRadius: 1,
+                            blurRadius: 10,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Icon(Icons.calendar_today, size: 20, color: Colors.grey[600]),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      _startDate == null && _endDate == null
-                                          ? 'Sélectionner une période'
-                                          : '${DateFormat('dd/MM/yyyy').format(_startDate!)} - ${DateFormat('dd/MM/yyyy').format(_endDate!)}',
-                                      style: TextStyle(
-                                        color: _startDate == null ? Colors.grey[600] : Colors.grey[800],
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4, bottom: 8),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.filter_list, size: 16, color: Colors.grey[600]),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            'Status',
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey.shade300),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton<String>(
+                                          value: _selectedStatus,
+                                          hint: Text('Sélectionner', style: TextStyle(color: Colors.grey[600])),
+                                          isExpanded: true,
+                                          items: [null, ..._statusOptions].map((status) {
+                                            return DropdownMenuItem<String>(
+                                              value: status,
+                                              child: Text(status ?? 'Tous', style: TextStyle(color: Colors.grey[800])),
+                                            );
+                                          }).toList(),
+                                          onChanged: (val) => setState(() => _selectedStatus = val),
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                if (_startDate != null || _endDate != null)
-                                  IconButton(
-                                    icon: Icon(Icons.clear, size: 20, color: Colors.grey[600]),
-                                    onPressed: () => setState(() {
-                                      _startDate = null;
-                                      _endDate = null;
-                                    }),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: FutureBuilder<List<Reclamation>>(
-                    future: _reclamations,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return Center(child: Text('Erreur: ${snapshot.error}'));
-                      }
-                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return Center(child: Text('Aucune réclamation.'));
-                      }
-                      final filtered = _applyFilters(snapshot.data!);
-                      return ListView.builder(
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          final r = filtered[index];
-                          final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
-                          Color cardColor;
-                          Color statusColor;
-                          IconData statusIcon;
-                          String dateLabel;
-                          DateTime displayDate;
-
-                          // Définir la couleur de la carte en fonction de la priorité
-                          switch (r.priority) {
-                            case 1:
-                              cardColor = Colors.red.shade900.withOpacity(0.8);
-                              break;
-                            case 2:
-                              cardColor = Colors.orange.shade900.withOpacity(0.8);
-                              break;
-                            case 3:
-                              cardColor = Colors.purple.shade900.withOpacity(0.8);
-                              break;
-                            default:
-                              cardColor = Colors.grey.shade900.withOpacity(0.8);
-                          }
-
-                          // Définir la couleur, l'icône et la date en fonction du statut
-                          switch (r.status) {
-                            case 'New':
-                              statusColor = Colors.orange;
-                              statusIcon = Icons.new_releases;
-                              dateLabel = 'Créée le';
-                              displayDate = r.createdAt;
-                              break;
-                            case 'In Progress':
-                              statusColor = Colors.blue;
-                              statusIcon = Icons.work;
-                              dateLabel = 'Prise en charge le';
-                              displayDate = r.updatedAt;
-                              break;
-                            case 'Done':
-                              statusColor = Colors.green;
-                              statusIcon = Icons.check_circle;
-                              dateLabel = 'Terminée le';
-                              displayDate = r.updatedAt;
-                              break;
-                            default:
-                              statusColor = Colors.grey;
-                              statusIcon = Icons.help;
-                              dateLabel = 'Créée le';
-                              displayDate = r.createdAt;
-                          }
-
-                          return Hero(
-                            tag: 'reclamation-${r.id}',
-                            child: Card(
-                              elevation: 4,
-                              margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              color: cardColor,
-                              child: InkWell(
-                                onTap: () => _showReclamationDetails(r),
-                                borderRadius: BorderRadius.circular(16),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        cardColor,
-                                        cardColor.withOpacity(0.8),
-                                      ],
+                              ),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4, bottom: 8),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.business, size: 16, color: Colors.grey[600]),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            'Département',
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 8,
-                                        offset: Offset(0, 4),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey.shade300),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton<String>(
+                                          value: _selectedDepartment,
+                                          hint: Text('Sélectionner', style: TextStyle(color: Colors.grey[600])),
+                                          isExpanded: true,
+                                          items: [null, ..._departmentOptions].map((dept) {
+                                            return DropdownMenuItem<String>(
+                                              value: dept,
+                                              child: Text(dept ?? 'Tous', style: TextStyle(color: Colors.grey[800])),
+                                            );
+                                          }).toList(),
+                                          onChanged: (val) => setState(() => _selectedDepartment = val),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 12),
+                          InkWell(
+                            onTap: _pickDateRange,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.calendar_today, size: 20, color: Colors.grey[600]),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        _startDate == null && _endDate == null
+                                            ? 'Sélectionner une période'
+                                            : '${DateFormat('dd/MM/yyyy').format(_startDate!)} - ${DateFormat('dd/MM/yyyy').format(_endDate!)}',
+                                        style: TextStyle(
+                                          color: _startDate == null ? Colors.grey[600] : Colors.grey[800],
+                                        ),
                                       ),
                                     ],
                                   ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    r.objet,
-                                                    style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.white,
-                                                      letterSpacing: 0.5,
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 8),
-                                                  Row(
-                                                    children: [
-                                                      Icon(Icons.access_time, size: 16, color: Colors.white.withOpacity(0.8)),
-                                                      SizedBox(width: 4),
-                                                      Text(
-                                                        '$dateLabel ${dateFormatter.format(displayDate.toLocal())}',
-                                                        style: TextStyle(
-                                                          color: Colors.white.withOpacity(0.8),
-                                                          fontSize: 14,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Container(
-                                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius: BorderRadius.circular(20),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.black.withOpacity(0.1),
-                                                    blurRadius: 4,
-                                                    offset: Offset(0, 2),
-                                                  ),
-                                                ],
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Icon(statusIcon, color: statusColor, size: 16),
-                                                  SizedBox(width: 4),
-                                                  Text(
-                                                    r.status,
-                                                    style: TextStyle(
-                                                      color: statusColor,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 13,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 4),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.end,
-                                          children: [
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.white.withOpacity(0.2),
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: IconButton(
-                                                icon: Icon(Icons.edit, color: Colors.white),
-                                                onPressed: () => _showReclamationForm(reclamation: r),
-                                              ),
-                                            ),
-                                            SizedBox(width: 8),
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.white.withOpacity(0.2),
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: IconButton(
-                                                icon: Icon(Icons.delete, color: Colors.white),
-                                                onPressed: () => _deleteReclamation(r.id),
-                                              ),
-                                            ),
-                                          ],
+                                  if (_startDate != null || _endDate != null)
+                                    IconButton(
+                                      icon: Icon(Icons.clear, size: 20, color: Colors.grey[600]),
+                                      onPressed: () => setState(() {
+                                        _startDate = null;
+                                        _endDate = null;
+                                      }),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: FutureBuilder<List<Reclamation>>(
+                      future: _reclamations,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                        if (snapshot.hasError) {
+                          return Center(child: Text('Erreur: ${snapshot.error}'));
+                        }
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return Center(child: Text('Aucune réclamation.'));
+                        }
+                        final filtered = _applyFilters(snapshot.data!);
+                        return ListView.builder(
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final r = filtered[index];
+                            final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
+                            Color cardColor;
+                            Color statusColor;
+                            IconData statusIcon;
+                            String dateLabel;
+                            DateTime displayDate;
+
+                            // Définir la couleur de la carte en fonction de la priorité
+                            switch (r.priority) {
+                              case 1:
+                                cardColor = Colors.red.shade900.withOpacity(0.8);
+                                break;
+                              case 2:
+                                cardColor = Colors.orange.shade900.withOpacity(0.8);
+                                break;
+                              case 3:
+                                cardColor = Colors.purple.shade900.withOpacity(0.8);
+                                break;
+                              default:
+                                cardColor = Colors.grey.shade900.withOpacity(0.8);
+                            }
+
+                            // Définir la couleur, l'icône et la date en fonction du statut
+                            switch (r.status) {
+                              case 'New':
+                                statusColor = Colors.orange;
+                                statusIcon = Icons.new_releases;
+                                dateLabel = 'Créée le';
+                                displayDate = r.createdAt;
+                                break;
+                              case 'In Progress':
+                                statusColor = Colors.blue;
+                                statusIcon = Icons.work;
+                                dateLabel = 'Prise en charge le';
+                                displayDate = r.updatedAt;
+                                break;
+                              case 'Done':
+                                statusColor = Colors.green;
+                                statusIcon = Icons.check_circle;
+                                dateLabel = 'Terminée le';
+                                displayDate = r.updatedAt;
+                                break;
+                              default:
+                                statusColor = Colors.grey;
+                                statusIcon = Icons.help;
+                                dateLabel = 'Créée le';
+                                displayDate = r.createdAt;
+                            }
+
+                            return Hero(
+                              tag: 'reclamation-${r.id}',
+                              child: Card(
+                                elevation: 4,
+                                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                color: cardColor,
+                                child: InkWell(
+                                  onTap: () => _showReclamationDetails(r),
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16),
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          cardColor,
+                                          cardColor.withOpacity(0.8),
+                                        ],
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 8,
+                                          offset: Offset(0, 4),
                                         ),
                                       ],
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      r.objet,
+                                                      style: TextStyle(
+                                                        fontSize: 18,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Colors.white,
+                                                        letterSpacing: 0.5,
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 8),
+                                                    Row(
+                                                      children: [
+                                                        Icon(Icons.access_time, size: 16, color: Colors.white.withOpacity(0.8)),
+                                                        SizedBox(width: 4),
+                                                        Text(
+                                                          '$dateLabel ${dateFormatter.format(displayDate.toLocal())}',
+                                                          style: TextStyle(
+                                                            color: Colors.white.withOpacity(0.8),
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Container(
+                                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius: BorderRadius.circular(20),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black.withOpacity(0.1),
+                                                      blurRadius: 4,
+                                                      offset: Offset(0, 2),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Icon(statusIcon, color: statusColor, size: 16),
+                                                    SizedBox(width: 4),
+                                                    Text(
+                                                      r.status,
+                                                      style: TextStyle(
+                                                        color: statusColor,
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 4),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white.withOpacity(0.2),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                child: IconButton(
+                                                  icon: Icon(Icons.edit, color: Colors.white),
+                                                  onPressed: () => _showReclamationForm(reclamation: r),
+                                                ),
+                                              ),
+                                              SizedBox(width: 8),
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white.withOpacity(0.2),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                child: IconButton(
+                                                  icon: Icon(Icons.delete, color: Colors.white),
+                                                  onPressed: () => _deleteReclamation(r.id),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      );
-                    },
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
