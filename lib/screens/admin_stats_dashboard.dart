@@ -155,7 +155,7 @@ class _AdminStatsDashboardState extends State<AdminStatsDashboard> with SingleTi
                         _buildStatCard('Nouvelles', statusCounts['New'].toString(), Icons.new_releases, Colors.blue),
                         _buildStatCard('En cours', statusCounts['In Progress'].toString(), Icons.pending_actions, Colors.orange),
                         _buildStatCard('Terminées', statusCounts['Done'].toString(), Icons.check_circle, Colors.green),
-                        _buildStatCard('Durée moyenne', '\${avgHours.toStringAsFixed(1)} heures', Icons.timer, Colors.purple),
+                        _buildStatCard('Durée moyenne', '${avgHours.toStringAsFixed(1)} heures', Icons.timer, Colors.purple),
                       ],
                     ),
                     SizedBox(height: 16),

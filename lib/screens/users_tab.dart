@@ -490,8 +490,9 @@ class _UserFormDialogState extends State<UserFormDialog> {
         ),
       ),
       content: Container(
-        width: MediaQuery.of(context).size.width * 0.8,
+        width: 420,
         constraints: BoxConstraints(
+          maxWidth: 420,
           maxHeight: MediaQuery.of(context).size.height * 0.7,
         ),
         child: SingleChildScrollView(
