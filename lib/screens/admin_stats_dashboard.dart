@@ -92,6 +92,9 @@ class _AdminStatsDashboardState extends State<AdminStatsDashboard> with SingleTi
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width > 1000;
+    final maxWidth = isWide ? 900.0 : double.infinity;
+    final gridCrossAxisCount = isWide ? 4 : 2;
     return FutureBuilder<List<Reclamation>>(
       future: _reclamations,
       builder: (context, snapshot) {
@@ -123,165 +126,169 @@ class _AdminStatsDashboardState extends State<AdminStatsDashboard> with SingleTi
         final durations = data.where((r) => r.status == 'Done').map((r) => r.updatedAt.difference(r.createdAt).inHours).toList();
         double avgHours = durations.isNotEmpty ? durations.reduce((a, b) => a + b) / durations.length : 0;
 
-        return SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Tableau de bord des statistiques',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue[900],
-                  ),
-                ),
-                SizedBox(height: 24),
-                
-                // Cartes de statistiques principales
-                GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 1.5,
+        return Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxWidth),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildStatCard('Nouvelles', statusCounts['New'].toString(), Icons.new_releases, Colors.blue),
-                    _buildStatCard('En cours', statusCounts['In Progress'].toString(), Icons.pending_actions, Colors.orange),
-                    _buildStatCard('Terminées', statusCounts['Done'].toString(), Icons.check_circle, Colors.green),
-                    _buildStatCard('Durée moyenne', '\\${avgHours.toStringAsFixed(1)} heures', Icons.timer, Colors.purple),
-                  ],
-                ),
-                SizedBox(height: 24),
-
-                // Graphique circulaire
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
+                    Text(
+                      'Tableau de bord des statistiques',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[900],
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    // Cartes de statistiques principales
+                    GridView.count(
+                      crossAxisCount: gridCrossAxisCount,
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 1.2,
                       children: [
-                        Text(
-                          'Distribution des réclamations',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 16),
-                        SizedBox(
-                          height: 200,
-                          child: PieChart(
-                            PieChartData(
-                              sections: [
-                                PieChartSectionData(
-                                  value: statusCounts['New']!.toDouble(),
-                                  color: Colors.blue,
-                                  title: 'New\n${((statusCounts['New']!/total)*100).toStringAsFixed(1)}%',
-                                  radius: 60,
-                                  titleStyle: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
-                                ),
-                                PieChartSectionData(
-                                  value: statusCounts['In Progress']!.toDouble(),
-                                  color: Colors.orange,
-                                  title: 'En cours\n${((statusCounts['In Progress']!/total)*100).toStringAsFixed(1)}%',
-                                  radius: 60,
-                                  titleStyle: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
-                                ),
-                                PieChartSectionData(
-                                  value: statusCounts['Done']!.toDouble(),
-                                  color: Colors.green,
-                                  title: 'Terminées\n${((statusCounts['Done']!/total)*100).toStringAsFixed(1)}%',
-                                  radius: 60,
-                                  titleStyle: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                              sectionsSpace: 2,
-                              centerSpaceRadius: 40,
-                            ),
-                          ),
-                        ),
+                        _buildStatCard('Nouvelles', statusCounts['New'].toString(), Icons.new_releases, Colors.blue),
+                        _buildStatCard('En cours', statusCounts['In Progress'].toString(), Icons.pending_actions, Colors.orange),
+                        _buildStatCard('Terminées', statusCounts['Done'].toString(), Icons.check_circle, Colors.green),
+                        _buildStatCard('Durée moyenne', '\${avgHours.toStringAsFixed(1)} heures', Icons.timer, Colors.purple),
                       ],
                     ),
-                  ),
-                ),
-                SizedBox(height: 24),
+                    SizedBox(height: 16),
 
-                // Évolution mensuelle
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Évolution mensuelle',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    // Graphique circulaire
+                    Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
                           children: [
-                            Column(
-                              children: [
-                                Text(
-                                  'Ce mois',
-                                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                                ),
-                                Text(
-                                  doneThisMonth.toString(),
-                                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue),
-                                ),
-                              ],
+                            Text(
+                              'Distribution des réclamations',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                             ),
-                            Column(
-                              children: [
-                                Text(
-                                  'Mois dernier',
-                                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                            SizedBox(height: 16),
+                            SizedBox(
+                              height: 200,
+                              child: PieChart(
+                                PieChartData(
+                                  sections: [
+                                    PieChartSectionData(
+                                      value: statusCounts['New']!.toDouble(),
+                                      color: Colors.blue,
+                                      title: 'New\n${((statusCounts['New']!/total)*100).toStringAsFixed(1)}%',
+                                      radius: 60,
+                                      titleStyle: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
+                                    ),
+                                    PieChartSectionData(
+                                      value: statusCounts['In Progress']!.toDouble(),
+                                      color: Colors.orange,
+                                      title: 'En cours\n${((statusCounts['In Progress']!/total)*100).toStringAsFixed(1)}%',
+                                      radius: 60,
+                                      titleStyle: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
+                                    ),
+                                    PieChartSectionData(
+                                      value: statusCounts['Done']!.toDouble(),
+                                      color: Colors.green,
+                                      title: 'Terminées\n${((statusCounts['Done']!/total)*100).toStringAsFixed(1)}%',
+                                      radius: 60,
+                                      titleStyle: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                  sectionsSpace: 2,
+                                  centerSpaceRadius: 40,
                                 ),
-                                Text(
-                                  doneLastMonth.toString(),
-                                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.orange),
-                                ),
-                              ],
+                              ),
                             ),
-                            Column(
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 24),
+
+                    // Évolution mensuelle
+                    Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Évolution mensuelle',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                Text(
-                                  'Évolution',
-                                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                                Column(
+                                  children: [
+                                    Text(
+                                      'Ce mois',
+                                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                                    ),
+                                    Text(
+                                      doneThisMonth.toString(),
+                                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue),
+                                    ),
+                                  ],
                                 ),
-                                Text(
-                                  '\\${percentChange.toStringAsFixed(1)}%',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: percentChange >= 0 ? Colors.green : Colors.red,
-                                  ),
+                                Column(
+                                  children: [
+                                    Text(
+                                      'Mois dernier',
+                                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                                    ),
+                                    Text(
+                                      doneLastMonth.toString(),
+                                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.orange),
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    Text(
+                                      'Évolution',
+                                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                                    ),
+                                    Text(
+                                      '\\${percentChange.toStringAsFixed(1)}%',
+                                      style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: percentChange >= 0 ? Colors.green : Colors.red,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-                SizedBox(height: 24),
+                    SizedBox(height: 24),
 
-                // Top départements
-                Text(
-                  'Top départements',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    // Top départements
+                    Text(
+                      'Top départements',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 16),
+                    ..._topDepartments(data, 3).map((e) => Padding(
+                      padding: EdgeInsets.only(bottom: 8),
+                      child: _buildDepartmentCard(e.key, e.value, total),
+                    )),
+                  ],
                 ),
-                SizedBox(height: 16),
-                ..._topDepartments(data, 3).map((e) => Padding(
-                  padding: EdgeInsets.only(bottom: 8),
-                  child: _buildDepartmentCard(e.key, e.value, total),
-                )),
-              ],
+              ),
             ),
           ),
         );

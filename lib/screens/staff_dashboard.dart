@@ -741,6 +741,8 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width > 1000;
+    final maxWidth = isWide ? 900.0 : double.infinity;
     return Scaffold(
       appBar: AppBar(
         leading: Builder(
@@ -834,21 +836,26 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
           ),
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.white, Colors.grey.shade50],
-          ),
-        ),
-        child: Column(
-          children: [
-            if (_selectedIndex == 0) _buildFilterSection(),
-            Expanded(
-              child: _buildReclamationsList(_selectedIndex),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.white, Colors.grey.shade50],
+              ),
             ),
-          ],
+            child: Column(
+              children: [
+                if (_selectedIndex == 0) _buildFilterSection(),
+                Expanded(
+                  child: _buildReclamationsList(_selectedIndex),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
