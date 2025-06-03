@@ -8,5 +8,8 @@
   "scripts": {
     "build": "cd hotel-app-backend && npm install",
     "start": "cd hotel-app-backend && node ./server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2"
   }
-} 
+}

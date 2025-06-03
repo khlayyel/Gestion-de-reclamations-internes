@@ -1,5 +1,8 @@
+// Importation du module express
 const express = require('express');
+// Création d'un routeur express
 const router = express.Router();
+// Importation du contrôleur de réclamation
 const reclamationController = require('../controllers/reclamationController');
 
 // Route pour créer une réclamation
@@ -20,4 +23,5 @@ router.delete('/:id', reclamationController.deleteReclamation);
 // Route pour obtenir les réclamations selon le rôle de l'utilisateur
 router.get('/byUser', reclamationController.getReclamationsByUser);
 
+// Exportation du routeur pour l'utiliser dans server.js
 module.exports = router;

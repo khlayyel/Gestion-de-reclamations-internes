@@ -4,13 +4,14 @@ import '../screens/reclamation.dart';
 import 'package:flutter/foundation.dart';  // Pour vérifier la plateforme
 import 'package:flutter/material.dart';
 
+// Service pour la gestion des réclamations (CRUD)
 class ReclamationService {
   // Fonction pour obtenir l'URL de base selon la plateforme
   static String getBaseUrl() {
     return 'https://gestion-de-reclamations-internes.onrender.com';
   }
 
-  // Méthode pour récupérer les réclamations
+  // Méthode pour récupérer toutes les réclamations
   static Future<List<Reclamation>> getReclamations() async {
     final baseUrl = getBaseUrl();
     final response = await http.get(Uri.parse('$baseUrl/api/reclamations'));
@@ -20,6 +21,7 @@ class ReclamationService {
 
     if (response.statusCode == 200) {
       if (response.body.isNotEmpty) {
+        // Décodage de la réponse JSON et conversion en liste de Réclamation
         List<dynamic> data = json.decode(response.body);
         print('Reclamations count: ${data.length}');
         return data.map((e) => Reclamation.fromJson(e)).toList();
@@ -31,7 +33,7 @@ class ReclamationService {
     }
   }
 
-  // Méthode pour créer une réclamation
+  // Méthode pour créer une nouvelle réclamation
   static Future<void> createReclamation(Reclamation reclamation, BuildContext context) async {
     final baseUrl = getBaseUrl();
     if (reclamation == null) {
@@ -44,14 +46,16 @@ class ReclamationService {
       body: json.encode(reclamation.toJson()),
     );
     if (response.statusCode == 201) {
+      // Affiche un message de succès
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Réclamation créée avec succès')));
     } else {
+      // Affiche un message d'erreur
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de la création de la réclamation')));
       throw Exception('Failed to create reclamation');
     }
   }
 
-  // Méthode pour modifier une réclamation
+  // Méthode pour modifier une réclamation existante
   static Future<void> updateReclamation(Reclamation reclamation, BuildContext context) async {
     final baseUrl = getBaseUrl();
     if (reclamation.id == null || reclamation.id.isEmpty) {
@@ -64,14 +68,16 @@ class ReclamationService {
       body: json.encode(reclamation.toJson()),
     );
     if (response.statusCode == 200) {
+      // Affiche un message de succès
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Réclamation modifiée avec succès')));
     } else {
+      // Affiche un message d'erreur
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de la modification de la réclamation')));
       throw Exception('Échec de la modification de la réclamation');
     }
   }
 
-  // Méthode pour mettre à jour uniquement le status d'une réclamation
+  // Méthode pour mettre à jour uniquement le status d'une réclamation (et éventuellement l'assignation)
   static Future<void> updateReclamationStatus(String id, String status, {String? assignedTo}) async {
     final baseUrl = getBaseUrl();
     try {
@@ -101,13 +107,16 @@ class ReclamationService {
       Uri.parse('$baseUrl/api/reclamations/$id'),
     );
     if (response.statusCode == 200) {
+      // Affiche un message de succès
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Réclamation supprimée')));
     } else {
+      // Affiche un message d'erreur
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de la suppression de la réclamation')));
       throw Exception('Erreur lors de la suppression de la réclamation');
     }
   }
 
+  // Méthode pour récupérer les réclamations filtrées par utilisateur
   static Future<List<Reclamation>> getReclamationsByUser(String userId) async {
     final baseUrl = getBaseUrl();
     final response = await http.get(Uri.parse('$baseUrl/api/reclamations/byUser?userId=$userId'));

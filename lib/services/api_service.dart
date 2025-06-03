@@ -3,8 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';  // Import nécessaire pour SharedPreferences
 
+// URL de base de l'API
 final String baseUrl = "https://gestion-de-reclamations-internes.onrender.com/api";
 
+// Service d'accès à l'API pour l'authentification et les infos utilisateur
 class ApiService {
 
   // Méthode pour se connecter
@@ -19,19 +21,21 @@ class ApiService {
         body: jsonEncode({'name': name, 'password': password}),
       );
 
-      print('Réponse du serveur: ${response.statusCode}');
-      print('Corps de la réponse: ${response.body}');
+      print('Réponse du serveur: \\${response.statusCode}');
+      print('Corps de la réponse: \\${response.body}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
         final prefs = await SharedPreferences.getInstance();
         
+        // Récupération des infos utilisateur
         String userId = responseData['id'] ?? responseData['_id'] ?? '';
         String userName = responseData['name'];
         String userEmail = responseData['email'];
         String userRole = responseData['role'] ?? 'staff';
         List<String> userDepartments = List<String>.from(responseData['departments'] ?? []);
         
+        // Stockage local des infos utilisateur
         await prefs.setString('userId', userId);
         await prefs.setString('userName', userName);
         await prefs.setString('userEmail', userEmail);
@@ -41,8 +45,8 @@ class ApiService {
         print('Connexion réussie pour: $userName avec le rôle: $userRole');
         return responseData;
       } else {
-        print('Échec de la connexion: ${response.statusCode}');
-        print('Message d\'erreur: ${response.body}');
+        print('Échec de la connexion: \\${response.statusCode}');
+        print('Message d\'erreur: \\${response.body}');
         return null;
       }
     } catch (e) {

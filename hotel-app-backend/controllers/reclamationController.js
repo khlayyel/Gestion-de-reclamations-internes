@@ -2,7 +2,7 @@ const Reclamation = require('../models/reclamation');
 const User = require('../models/user');
 const nodemailer = require('nodemailer');
 
-// Service d'envoi d'email
+// Configuration du service d'envoi d'email (Gmail ici)
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -11,6 +11,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// Fonction utilitaire pour envoyer une notification email lors de la création d'une réclamation
 async function sendReclamationNotification(reclamation, emails) {
   const { objet, description, departments, priority, status, location, createdBy } = reclamation;
   const subject = "Nouvelle Réclamation";
@@ -44,6 +45,7 @@ async function sendReclamationNotification(reclamation, emails) {
   console.log('--- [FIN ENVOI EMAIL RECLAMATION] ---');
 }
 
+// Créer une nouvelle réclamation
 exports.createReclamation = async (req, res) => {
   try {
     const reclamationData = { ...req.body };
@@ -56,6 +58,7 @@ exports.createReclamation = async (req, res) => {
       }
     }
 
+    // Création et sauvegarde de la réclamation
     const reclamation = new Reclamation(reclamationData);
     await reclamation.save();
 
@@ -65,7 +68,7 @@ exports.createReclamation = async (req, res) => {
     const emails = [
       ...admins.map(a => a.email),
       ...staffs.map(s => s.email)
-    ].filter((v, i, a) => a.indexOf(v) === i);
+    ].filter((v, i, a) => a.indexOf(v) === i); // Unicité
     await sendReclamationNotification(reclamation, emails);
 
     // Émettre l'événement WebSocket
@@ -76,11 +79,13 @@ exports.createReclamation = async (req, res) => {
   }
 };
 
+// Obtenir toutes les réclamations
 exports.getAllReclamations = async (req, res) => {
   const reclamations = await Reclamation.find();
   res.json(reclamations);
 };
 
+// Mettre à jour le statut d'une réclamation
 exports.updateStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -102,7 +107,7 @@ exports.updateStatus = async (req, res) => {
       id,
       { 
         status, 
-        assignedTo, // Use the name directly since we're storing names in the reclamation
+        assignedTo, // Utilise le nom directement
         updatedAt: new Date() 
       },
       { new: true }
@@ -118,6 +123,7 @@ exports.updateStatus = async (req, res) => {
   }
 };
 
+// Mettre à jour une réclamation (tous champs)
 exports.updateReclamation = async (req, res) => {
   const { id } = req.params;
   const updateData = { ...req.body };
@@ -136,6 +142,7 @@ exports.updateReclamation = async (req, res) => {
       }
     }
 
+    // Mise à jour de la réclamation
     const updatedReclamation = await Reclamation.findByIdAndUpdate(
       id,
       { ...updateData, updatedAt: new Date() },
@@ -157,6 +164,7 @@ exports.updateReclamation = async (req, res) => {
   }
 };
 
+// Supprimer une réclamation
 exports.deleteReclamation = async (req, res) => {
   try {
     await Reclamation.findByIdAndDelete(req.params.id);
@@ -168,7 +176,7 @@ exports.deleteReclamation = async (req, res) => {
   }
 };
 
-// Nouvelle route pour filtrer les réclamations selon le rôle
+// Obtenir les réclamations selon le rôle de l'utilisateur
 exports.getReclamationsByUser = async (req, res) => {
   try {
     const { userId } = req.query;

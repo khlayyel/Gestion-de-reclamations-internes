@@ -110,7 +110,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Logo et titre en haut
                       Container(
                         padding: EdgeInsets.all(20),
                         decoration: BoxDecoration(
@@ -150,7 +149,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         ),
                       ),
                       SizedBox(height: 50),
-                      // Formulaire de connexion
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white,

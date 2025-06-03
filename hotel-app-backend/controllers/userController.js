@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const bcrypt = require('bcryptjs');
 
 // Créer un nouvel utilisateur
 exports.createUser = async (req, res) => {
@@ -25,7 +26,11 @@ exports.createUser = async (req, res) => {
       return res.status(400).json({ message: 'Cet email est déjà utilisé' });
     }
 
-    let userData = { name, email, password, role: role || 'staff' };
+    // Hashage du mot de passe
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    let userData = { name, email, password: hashedPassword, role: role || 'staff' };
     if (role === 'staff') {
       userData.departments = departments;
     }
@@ -65,7 +70,9 @@ exports.loginUser = async (req, res) => {
 
     if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
 
-    if (user.password !== password) {
+    // Comparaison du mot de passe avec bcrypt
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return res.status(401).json({ message: 'Mot de passe incorrect' });
     }
 
@@ -83,7 +90,7 @@ exports.loginUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    const { role, departments } = req.body;
+    const { role, departments, password } = req.body;
     let updateData = { ...req.body };
     if (role === 'staff') {
       updateData.departments = departments;
@@ -93,6 +100,11 @@ exports.updateUser = async (req, res) => {
     // Ajout du champ modifiePar si fourni
     if (req.body.modifiePar) {
       updateData.modifiePar = req.body.modifiePar;
+    }
+    // Si un nouveau mot de passe est fourni, le hasher
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(password, salt);
     }
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,

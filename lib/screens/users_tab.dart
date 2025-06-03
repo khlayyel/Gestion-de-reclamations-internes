@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 import '../services/user_service.dart';
 
+// Onglet affichant la liste des utilisateurs (pour l'admin)
 class UsersTab extends StatefulWidget {
   @override
   _UsersTabState createState() => _UsersTabState();
 }
 
+// State de l'onglet utilisateurs
 class _UsersTabState extends State<UsersTab> {
+  // Liste future des utilisateurs
   late Future<List<dynamic>> _users;
+  // Liste filtrée affichée
   List<dynamic> _filteredUsers = [];
+  // Valeur de recherche
   String _searchQuery = '';
+  // Filtres sélectionnés
   String? _selectedRole;
   String? _selectedDepartment;
 
+  // Options de rôles et départements
   final List<String> _roles = ['staff', 'admin'];
   final List<String> _departments = [
     'Nettoyage', 'Réception', 'Maintenance', 'Sécurité',
@@ -22,9 +29,10 @@ class _UsersTabState extends State<UsersTab> {
   @override
   void initState() {
     super.initState();
-    _fetchUsers();
+    _fetchUsers(); // Récupère les utilisateurs au démarrage
   }
 
+  // Récupère la liste des utilisateurs
   void _fetchUsers() {
     setState(() {
       _users = UserService.getUsers();
@@ -36,11 +44,13 @@ class _UsersTabState extends State<UsersTab> {
     });
   }
 
+  // Supprime un utilisateur
   void _deleteUser(String id) async {
     await UserService.deleteUser(id, context);
     _fetchUsers();
   }
 
+  // Affiche le formulaire d'ajout/modification d'utilisateur
   void _showUserForm({Map<String, dynamic>? user}) async {
     final result = await showDialog(
       context: context,
@@ -49,6 +59,7 @@ class _UsersTabState extends State<UsersTab> {
     if (result == true) _fetchUsers();
   }
 
+  // Filtre la liste selon la recherche
   void _filterUsers(String query) async {
     final users = await _users;
     setState(() {
@@ -62,6 +73,7 @@ class _UsersTabState extends State<UsersTab> {
     });
   }
 
+  // Applique les filtres sélectionnés
   void _applyFilters() async {
     final users = await _users;
     setState(() {
