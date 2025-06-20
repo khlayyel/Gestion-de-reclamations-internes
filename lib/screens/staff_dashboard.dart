@@ -8,6 +8,7 @@ import '../services/api_service.dart';
 import 'dart:async';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:hotel_staff_app/screens/login_screen.dart';
+import '../services/user_service.dart';
 
 class StaffDashboard extends StatefulWidget {
   @override
@@ -28,6 +29,9 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
   String? _selectedDepartment;
   DateTime? _startDate;
   DateTime? _endDate;
+
+  // Ajout : état pour l'ordre de tri (true = asc, false = desc)
+  bool _isSortAsc = true;
 
   final List<String> _statusOptions = ['New', 'In Progress', 'Done'];
   final List<String> _priorityOptions = ['1', '2', '3'];
@@ -168,6 +172,10 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
         break;
       case 1: // Mes réclamations
         filtered = filtered.where((r) => r.createdBy == _userEmail).toList();
+        // Ajout : tri par date selon _isSortAsc
+        filtered.sort((a, b) => _isSortAsc
+            ? a.createdAt.compareTo(b.createdAt)
+            : b.createdAt.compareTo(a.createdAt));
         break;
       case 2: // Prises en charge
         filtered = filtered.where((r) => r.assignedTo == _userName && r.status != 'Done').toList();
@@ -453,7 +461,8 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
                     ],
                   ),
                   SizedBox(height: 16),
-                  if (r.createdBy == _userName && r.status == 'New')
+                  // Afficher les boutons uniquement si l'utilisateur courant est le créateur et statut New
+                  if (r.createdBy == _userEmail && r.status == 'New')
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -543,200 +552,13 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
         minChildSize: 0.5,
         maxChildSize: 0.95,
         expand: false,
-        builder: (context, scrollController) => SingleChildScrollView(
-          controller: scrollController,
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: EdgeInsets.only(bottom: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                Text(
-                  r.objet,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  r.description,
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(height: 24),
-                _buildDetailRow(Icons.location_on, 'Emplacement', r.location),
-                _buildDetailRow(Icons.work, 'Statut', r.status),
-                _buildDetailRow(Icons.person, 'Créé par', r.createdBy),
-                if (r.assignedTo.isNotEmpty)
-                  _buildDetailRow(Icons.assignment_ind, 'Assigné à', r.assignedTo),
-                SizedBox(height: 24),
-                if (r.status == 'New')
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _isLoading ? null : () => _takeInCharge(r),
-                      icon: Icon(Icons.work),
-                      label: Text('Prendre en charge'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                      ),
-                    ),
-                  ),
-                if (r.status == 'In Progress' && r.assignedTo == _userName)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _isLoading ? null : () => _markAsDone(r),
-                      icon: Icon(Icons.check),
-                      label: Text('Marquer comme terminé'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
+        builder: (context, scrollController) => _ReclamationDetailSheet(
+          reclamation: r,
+          onEdit: () => _showReclamationForm(reclamation: r),
+          onDelete: () => _deleteReclamation(r.id),
         ),
       ),
     );
-  }
-
-  Widget _buildDetailRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: Colors.grey[600]),
-          SizedBox(width: 8),
-          Text(
-            '$label: ',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(color: Colors.grey[800]),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showReclamationForm({Reclamation? reclamation}) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => reclamation == null 
-          ? ReclamationForm() 
-          : EditReclamationForm(reclamation: reclamation),
-      ),
-    );
-    
-    if (result == true) {
-      _fetchReclamations();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.white),
-              SizedBox(width: 8),
-              Text(reclamation == null 
-                ? 'La réclamation a été créée avec succès'
-                : 'La réclamation a été modifiée avec succès'),
-            ],
-          ),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 3),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height - 100,
-            left: 10,
-            right: 10,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
-    }
-  }
-
-  Future<void> _deleteReclamation(String id) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Confirmer la suppression'),
-        content: Text('Êtes-vous sûr de vouloir supprimer cette réclamation ?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text('Supprimer', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      setState(() => _isLoading = true);
-      try {
-        await ReclamationService.deleteReclamation(id, context);
-        _fetchReclamations();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 8),
-                Text('La réclamation a été supprimée avec succès'),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
-            behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height - 100,
-              left: 10,
-              right: 10,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur lors de la suppression: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      } finally {
-        setState(() => _isLoading = false);
-      }
-    }
   }
 
   @override
@@ -761,6 +583,17 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
           ),
         ),
         actions: [
+          // Ajout : bouton de tri uniquement pour l'onglet "Mes réclamations"
+          if (_selectedIndex == 1)
+            IconButton(
+              tooltip: _isSortAsc ? 'Trier par date descendante' : 'Trier par date ascendante',
+              icon: Icon(_isSortAsc ? Icons.arrow_upward : Icons.arrow_downward),
+              onPressed: () {
+                setState(() {
+                  _isSortAsc = !_isSortAsc;
+                });
+              },
+            ),
           IconButton(
             icon: Icon(Icons.logout),
             tooltip: 'Déconnexion',
@@ -1001,6 +834,263 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
           ),
         );
       },
+    );
+  }
+
+  void _showReclamationForm({Reclamation? reclamation}) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => reclamation == null 
+          ? ReclamationForm() 
+          : EditReclamationForm(reclamation: reclamation),
+      ),
+    );
+    
+    if (result == true) {
+      _fetchReclamations();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 8),
+              Text(reclamation == null 
+                ? 'La réclamation a été créée avec succès'
+                : 'La réclamation a été modifiée avec succès'),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height - 100,
+            left: 10,
+            right: 10,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _deleteReclamation(String id) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Confirmer la suppression'),
+        content: Text('Êtes-vous sûr de vouloir supprimer cette réclamation ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Supprimer', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() => _isLoading = true);
+      try {
+        await ReclamationService.deleteReclamation(id, context);
+        _fetchReclamations();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('La réclamation a été supprimée avec succès'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.only(
+              bottom: MediaQuery.of(context).size.height - 100,
+              left: 10,
+              right: 10,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors de la suppression: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } finally {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+}
+
+// Ajout d'un widget pour gérer l'affichage asynchrone des départements du créateur
+class _ReclamationDetailSheet extends StatefulWidget {
+  final Reclamation reclamation;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
+  const _ReclamationDetailSheet({required this.reclamation, this.onEdit, this.onDelete});
+
+  @override
+  State<_ReclamationDetailSheet> createState() => _ReclamationDetailSheetState();
+}
+
+class _ReclamationDetailSheetState extends State<_ReclamationDetailSheet> {
+  List<String>? _creatorDepartments;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCreatorDepartments();
+  }
+
+  Future<void> _fetchCreatorDepartments() async {
+    try {
+      final users = await UserService.getUsers();
+      final user = users.firstWhere(
+        (u) => u['email'] == widget.reclamation.createdBy,
+        orElse: () => null,
+      );
+      setState(() {
+        _creatorDepartments = user != null && user['departments'] != null
+            ? List<String>.from(user['departments'])
+            : [];
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _creatorDepartments = [];
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final r = widget.reclamation;
+    return SingleChildScrollView(
+      controller: PrimaryScrollController.of(context),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Text(
+              r.objet,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 16),
+            Text(
+              r.description,
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 24),
+            _buildDetailRow(Icons.location_on, 'Emplacement', r.location),
+            _buildDetailRow(Icons.work, 'Statut', r.status),
+            // Affichage email + départements
+            _loading
+                ? Row(
+                    children: [
+                      Icon(Icons.person, size: 20, color: Colors.grey[600]),
+                      SizedBox(width: 8),
+                      Text('Créé par: ${r.createdBy} ...', style: TextStyle(color: Colors.grey[800])),
+                    ],
+                  )
+                : _buildDetailRow(
+                    Icons.person,
+                    'Créé par',
+                    '${r.createdBy} - [${_creatorDepartments?.join(', ') ?? ''}]',
+                  ),
+            if (r.assignedTo.isNotEmpty)
+              _buildDetailRow(Icons.assignment_ind, 'Assigné à', r.assignedTo),
+            SizedBox(height: 24),
+            if (r.status == 'New')
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: (context.findAncestorStateOfType<_StaffDashboardState>()?._isLoading ?? false)
+                      ? null
+                      : () => context.findAncestorStateOfType<_StaffDashboardState>()?._takeInCharge(r),
+                  icon: Icon(Icons.work),
+                  label: Text('Prendre en charge'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ),
+            if (r.status == 'In Progress' && r.assignedTo == (context.findAncestorStateOfType<_StaffDashboardState>()?._userName ?? ''))
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: (context.findAncestorStateOfType<_StaffDashboardState>()?._isLoading ?? false)
+                      ? null
+                      : () => context.findAncestorStateOfType<_StaffDashboardState>()?._markAsDone(r),
+                  icon: Icon(Icons.check),
+                  label: Text('Marquer comme terminé'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.grey[600]),
+          SizedBox(width: 8),
+          Text(
+            '$label: ',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[600],
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(color: Colors.grey[800]),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

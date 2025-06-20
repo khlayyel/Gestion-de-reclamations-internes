@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');  // Import express-session for session management
-const User = require('../models/User');
+const User = require('../models/user');
 const router = express.Router();
 
 // Middleware pour gérer les sessions

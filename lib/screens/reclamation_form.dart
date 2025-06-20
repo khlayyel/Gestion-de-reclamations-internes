@@ -47,6 +47,84 @@ class _ReclamationFormState extends State<ReclamationForm> {
     {'value': 1, 'label': 'Haute', 'color': Colors.red},
   ];
 
+  // Problèmes types d'hôtel
+  final List<Map<String, dynamic>> _commonProblems = [
+    {
+      'icon': Icons.wc,
+      'objet': "Toilettes sales",
+      'description': "Les toilettes sont sales ou malodorantes.",
+      'departments': ['Nettoyage'],
+      'priority': 1,
+    },
+    {
+      'icon': Icons.lightbulb_outline,
+      'objet': "Ampoule grillée",
+      'description': "Une ampoule ne fonctionne plus dans la chambre ou le couloir.",
+      'departments': ['Maintenance'],
+      'priority': 2,
+    },
+    {
+      'icon': Icons.water_damage,
+      'objet': "Fuite d'eau",
+      'description': "Fuite d'eau détectée dans la salle de bain ou ailleurs.",
+      'departments': ['Maintenance'],
+      'priority': 1,
+    },
+    {
+      'icon': Icons.ac_unit,
+      'objet': "Climatisation en panne",
+      'description': "La climatisation ne fonctionne pas ou fait du bruit.",
+      'departments': ['Maintenance'],
+      'priority': 2,
+    },
+    {
+      'icon': Icons.tv,
+      'objet': "Télévision défectueuse",
+      'description': "La télévision ne s'allume pas ou a des problèmes d'image/son.",
+      'departments': ['Maintenance', 'Informatique'],
+      'priority': 2,
+    },
+    {
+      'icon': Icons.wifi_off,
+      'objet': "Problème Wi-Fi",
+      'description': "Le Wi-Fi ne fonctionne pas ou est très lent.",
+      'departments': ['Informatique'],
+      'priority': 3,
+    },
+    {
+      'icon': Icons.cleaning_services,
+      'objet': "Chambre non nettoyée",
+      'description': "La chambre n'a pas été nettoyée ou mal nettoyée.",
+      'departments': ['Nettoyage'],
+      'priority': 1,
+    },
+    {
+      'icon': Icons.restaurant,
+      'objet': "Problème de repas",
+      'description': "Le repas servi est froid, manquant ou incorrect.",
+      'departments': ['Restauration', 'Cuisine'],
+      'priority': 2,
+    },
+    {
+      'icon': Icons.lock,
+      'objet': "Serrure défectueuse",
+      'description': "La serrure de la porte ne fonctionne pas correctement.",
+      'departments': ['Maintenance', 'Sécurité'],
+      'priority': 1,
+    },
+    {
+      'icon': Icons.local_laundry_service,
+      'objet': "Problème de linge",
+      'description': "Le linge n'a pas été changé ou est manquant.",
+      'departments': ['Blanchisserie'],
+      'priority': 2,
+    },
+  ];
+
+  // Ajout des contrôleurs pour objet et description
+  final TextEditingController _objetController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+
   // Fonction pour récupérer l'email de l'utilisateur connecté
   void _getUserEmail() async {
     String? email = await ApiService.obtenirEmailUtilisateurConnecte();
@@ -65,6 +143,13 @@ class _ReclamationFormState extends State<ReclamationForm> {
     _getUserEmail();
     // Initialiser avec une liste vide au lieu de tous les départements
     _departments = [];
+  }
+
+  @override
+  void dispose() {
+    _objetController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
   }
 
   // Fonction pour soumettre le formulaire
@@ -268,6 +353,78 @@ class _ReclamationFormState extends State<ReclamationForm> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Ajout : grille de problèmes types
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '  Problèmes courants',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue.shade800,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: isWide ? 5 : 2,
+                                mainAxisSpacing: 8,
+                                crossAxisSpacing: 8,
+                                childAspectRatio: 1.2,
+                              ),
+                              itemCount: _commonProblems.length,
+                              itemBuilder: (context, index) {
+                                final problem = _commonProblems[index];
+                                return InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _objet = problem['objet'];
+                                      _description = problem['description'];
+                                      _departments = List<String>.from(problem['departments']);
+                                      _priority = problem['priority'];
+                                      // Remplir les contrôleurs
+                                      _objetController.text = problem['objet'];
+                                      _descriptionController.text = problem['description'];
+                                    });
+                                  },
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      border: Border.all(color: Colors.blue.shade100, width: 2),
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.blue.shade50,
+                                          blurRadius: 4,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(problem['icon'], color: Colors.blue, size: 32),
+                                        SizedBox(height: 8),
+                                        Text(
+                                          problem['objet'],
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(fontSize: 13, color: Colors.blue.shade900),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
                       Card(
                         elevation: 4,
                         shape: RoundedRectangleBorder(
@@ -297,7 +454,9 @@ class _ReclamationFormState extends State<ReclamationForm> {
                                   filled: true,
                                   fillColor: Colors.white,
                                 ),
+                                controller: _objetController,
                                 validator: (value) => value!.isEmpty ? 'L\'objet est requis' : null,
+                                onChanged: (value) => setState(() => _objet = value),
                                 onSaved: (value) => _objet = value!,
                               ),
                               SizedBox(height: 16),
@@ -312,7 +471,9 @@ class _ReclamationFormState extends State<ReclamationForm> {
                                   fillColor: Colors.white,
                                 ),
                                 maxLines: 3,
+                                controller: _descriptionController,
                                 validator: (value) => value!.isEmpty ? 'La description est requise' : null,
+                                onChanged: (value) => setState(() => _description = value),
                                 onSaved: (value) => _description = value!,
                               ),
                             ],
