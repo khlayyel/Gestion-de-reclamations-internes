@@ -1,13 +1,10 @@
 // Importation des modules nécessaires
+require('dotenv').config(); // Charger les variables d'environnement
 const express = require('express'); // Framework web pour Node.js
 const mongoose = require('mongoose'); // ODM pour MongoDB
-const dotenv = require('dotenv'); // Pour charger les variables d'environnement
 const cors = require('cors'); // Pour gérer les requêtes cross-origin
 const http = require('http'); // Module HTTP natif de Node.js
 const { Server } = require('socket.io'); // Pour le support WebSocket
-
-// Charger les variables d'environnement depuis le fichier .env
-dotenv.config();
 
 // Initialiser l'application Express
 const app = express();

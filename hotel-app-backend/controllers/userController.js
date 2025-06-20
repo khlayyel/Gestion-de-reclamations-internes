@@ -1,9 +1,10 @@
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
+const { sendUserCredentialsEmail } = require('../utils/emailService');
 
 // Créer un nouvel utilisateur
 exports.createUser = async (req, res) => {
-  const { name, email, password, role, departments } = req.body;
+  const { name, email, password, role, departments, ajoutePar } = req.body;
 
   console.log('Données reçues:', req.body);
 
@@ -35,15 +36,27 @@ exports.createUser = async (req, res) => {
       userData.departments = departments;
     }
     // Ajout du champ ajoutePar si fourni
-    if (req.body.ajoutePar) {
-      userData.ajoutePar = req.body.ajoutePar;
+    if (ajoutePar) {
+      userData.ajoutePar = ajoutePar;
     }
     // Si admin, ne pas mettre de départements
 
     const newUser = new User(userData);
     await newUser.save();
     console.log('Utilisateur créé avec succès:', newUser);
-    res.status(201).json(newUser);
+
+    // Envoyer l'email de bienvenue avec le mot de passe en clair
+    await sendUserCredentialsEmail({
+      email,
+      name,
+      password, // mot de passe en clair
+      role,
+      departments,
+      action: 'create',
+      adminName: ajoutePar
+    });
+
+    res.status(201).json({ message: 'Utilisateur créé avec succès', user: newUser });
   } catch (error) {
     console.error('Erreur lors de la création:', error);
     res.status(500).json({ message: 'Erreur lors de la création de l\'utilisateur', error: error.message });
@@ -90,33 +103,37 @@ exports.loginUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    const { role, departments, password } = req.body;
-    let updateData = { ...req.body };
-    if (role === 'staff') {
-      updateData.departments = departments;
-    } else if (role === 'admin') {
-      updateData.departments = undefined;
-    }
-    // Ajout du champ modifiePar si fourni
-    if (req.body.modifiePar) {
-      updateData.modifiePar = req.body.modifiePar;
-    }
+    const { id } = req.params;
+    const { name, email, password, role, departments, modifiePar } = req.body;
+
+    const updateData = { name, email, role, departments, modifiePar };
+
     // Si un nouveau mot de passe est fourni, le hasher
     if (password) {
       const salt = await bcrypt.genSalt(10);
       updateData.password = await bcrypt.hash(password, salt);
     }
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true }
-    );
+
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true });
+
     if (!updatedUser) {
       return res.status(404).json({ message: 'Utilisateur non trouvé' });
     }
-    res.json(updatedUser);
+
+    // Envoyer un email de notification pour chaque mise à jour
+    await sendUserCredentialsEmail({
+      email: updatedUser.email,
+      name: updatedUser.name,
+      password, // mot de passe en clair (sera undefined si non fourni, ce qui est géré par le service email)
+      role: updatedUser.role,
+      departments: updatedUser.departments,
+      action: 'update',
+      adminName: modifiePar
+    });
+
+    res.status(200).json({ message: 'Utilisateur modifié avec succès', user: updatedUser });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la mise à jour', error });
+    res.status(500).json({ message: 'Erreur lors de la modification de l\'utilisateur', error: error.message });
   }
 };
 
