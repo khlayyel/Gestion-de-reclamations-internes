@@ -55,6 +55,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     try {
       final user = await ApiService.login(nameController.text, passwordController.text);
       if (user != null) {
+        await NotificationService.promptForPushNotifications();
+        
         final String? playerId = await NotificationService.getPlayerId();
         final String? userId = user['_id'] ?? user['id'];
 
