@@ -17,12 +17,26 @@ class _OneSignalNotifications {
   external Future<bool> requestPermission();
 }
 
+@JS()
+@anonymous
+class _PushSubscription {
+  external String? get id;
+}
+
+@JS()
+@anonymous
+class _OneSignalUser {
+  external _PushSubscription get pushSubscription;
+}
+
 // Classe pour l'objet principal OneSignal
 @JS('OneSignal')
 class _OneSignal {
   external static void push(dynamic item);
   external static void init(_InitOptions options);
-  external static Future<String?> getPlayerId();
+
+  @JS('User')
+  external static _OneSignalUser get User;
 
   // Getter pour accéder à l'objet Notifications
   @JS('Notifications')
@@ -92,7 +106,7 @@ Future<String?> getPlayerIdFromService() async {
     return null;
   }
   await _waitForOneSignal();
-  return await _OneSignal.getPlayerId();
+  return _OneSignal.User.pushSubscription.id;
 }
 
 Future<void> _waitForOneSignal() async {
