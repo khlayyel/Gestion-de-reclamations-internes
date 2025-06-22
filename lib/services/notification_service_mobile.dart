@@ -1,13 +1,17 @@
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
-class NotificationService {
-  static Future<void> init() async {
-    OneSignal.shared.setAppId("6ce72582-adbc-4b70-a16b-6af977e59707");
-    await OneSignal.shared.promptUserForPushNotificationPermission();
-  }
+Future<void> initNotificationService() async {
+  OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+  await OneSignal.initialize("109a25e1-389f-4f6b-a279-813a36f735c0");
+  await OneSignal.Notifications.requestPermission(true);
+}
 
-  static Future<String?> getPlayerId() async {
-    final deviceState = await OneSignal.shared.getDeviceState();
-    return deviceState?.userId;
-  }
+Future<String?> getPlayerIdFromService() async {
+  return OneSignal.User.pushSubscription.id;
+}
+
+Future<void> promptForPushNotifications() async {
+  // Sur mobile, la permission est déjà demandée à l'initialisation.
+  // On peut la redemander explicitement si nécessaire.
+  await OneSignal.Notifications.requestPermission(true);
 }
