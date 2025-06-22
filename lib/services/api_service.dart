@@ -4,7 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';  // Import nécessaire pour SharedPreferences
 
 // URL de base de l'API
-final String baseUrl = "https://gestion-de-reclamations-internes.onrender.com/api";
+final String baseUrl = kDebugMode 
+    ? "http://localhost:5000/api" // URL pour le développement local
+    : "https://gestion-de-reclamations-internes.onrender.com/api"; // URL pour la production
 
 // Service d'accès à l'API pour l'authentification et les infos utilisateur
 class ApiService {

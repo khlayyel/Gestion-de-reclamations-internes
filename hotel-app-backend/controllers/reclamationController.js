@@ -72,11 +72,17 @@ exports.createReclamation = async (req, res) => {
         return allUsersToNotify.find(u => u.id === id);
     });
 
+    // Envoyer les notifications par email
+    const emailsToNotify = uniqueUsers.map(u => u.email).filter(Boolean);
+    if (emailsToNotify.length > 0) {
+      await sendReclamationNotification(reclamation, emailsToNotify);
+    }
+
     const playerIds = uniqueUsers.flatMap(u => u.playerIds).filter(Boolean); // Récupère tous les playerIds et filtre les valeurs null/undefined
 
     if (playerIds.length > 0) {
         const heading = `Nouveau: ${reclamation.objet}`;
-        const content = `Une nouvelle réclamation a été créée pour le(s) département(s): ${reclamation.departments.join(', ')}.`;
+        const content = `Nouvelle réclamation. Consultez vos emails ou l'application pour les détails.`;
         await sendNotification(playerIds, heading, content);
     }
 

@@ -14,7 +14,9 @@ class _ReclamationFormState extends State<ReclamationForm> {
   final _formKey = GlobalKey<FormState>();
   // Méthode pour obtenir l'URL en fonction de la plateforme
   static String get baseUrl {
-    return 'https://gestion-de-reclamations-internes.onrender.com';
+    return kDebugMode 
+      ? 'http://localhost:5000' // URL pour le développement local
+      : 'https://gestion-de-reclamations-internes.onrender.com'; // URL pour la production
   }
 
   // Variables pour stocker les valeurs des champs
