@@ -43,6 +43,24 @@
       });
     });
   </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/OneSignalSDKWorker.js')
+        .then(function(reg) {
+          console.log('OneSignal Service Worker enregistré', reg);
+        })
+        .catch(function(err) {
+          console.error('Erreur lors de l\'enregistrement du Service Worker OneSignal', err);
+        });
+      navigator.serviceWorker.register('/OneSignalSDKUpdaterWorker.js')
+        .then(function(reg) {
+          console.log('OneSignal Updater Service Worker enregistré', reg);
+        })
+        .catch(function(err) {
+          console.error('Erreur lors de l\'enregistrement du Updater Service Worker OneSignal', err);
+        });
+    }
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
