@@ -57,21 +57,26 @@ Future<void> initNotificationService() async {
   if (_isOneSignalInitialized) {
     return;
   }
+  // On pose le verrou immédiatement pour empêcher toute autre tentative, qu'elle réussisse ou échoue.
+  _isOneSignalInitialized = true;
 
   if (!_isAllowedHostname()) {
     print('Initialisation de OneSignal ignorée pour le domaine : ${window.location.hostname}');
     return;
   }
 
-  await _waitForOneSignal();
-  _OneSignal.push(allowInterop((_) {
-    _OneSignal.init(_InitOptions(
-      appId: '109a25e1-389f-4f6b-a279-813a36f735c0',
-      allowLocalhostAsSecureOrigin: true,
-    ));
-  }));
-
-  _isOneSignalInitialized = true;
+  try {
+    await _waitForOneSignal();
+    _OneSignal.push(allowInterop((_) {
+      _OneSignal.init(_InitOptions(
+        appId: '109a25e1-389f-4f6b-a279-813a36f735c0',
+        allowLocalhostAsSecureOrigin: true,
+      ));
+    }));
+  } catch (e) {
+    // Si l'initialisation échoue (ex: mauvais domaine), on l'affiche en console mais on ne bloque pas l'app.
+    print('ERREUR : L\'initialisation de OneSignal a échoué. Veuillez vérifier la configuration de votre domaine sur le tableau de bord OneSignal. Erreur: $e');
+  }
 }
 
 Future<void> promptForPushNotifications() async {
