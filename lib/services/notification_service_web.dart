@@ -38,19 +38,31 @@ class _InitOptions {
   });
 }
 
+// --- Fonctions utilitaires ---
+
+// Fonction pour vérifier si le nom de domaine est autorisé.
+// Autorise localhost et tous les sous-domaines de vercel.app.
+bool _isAllowedHostname() {
+  final hostname = window.location.hostname;
+  // On s'assure que le nom de domaine n'est pas nul avant de continuer.
+  if (hostname == null) {
+    return false;
+  }
+  return hostname == 'localhost' || hostname.endsWith('.vercel.app');
+}
+
 // --- Fonctions du service ---
 
 Future<void> initNotificationService() async {
-  // On vérifie si le service a déjà été initialisé. Si oui, on ne fait rien.
   if (_isOneSignalInitialized) {
     return;
   }
 
-  final hostname = window.location.hostname;
-  if (hostname != 'reclamations-internes.vercel.app' && hostname != 'localhost') {
-    print('Initialisation de OneSignal ignorée pour le domaine : $hostname');
+  if (!_isAllowedHostname()) {
+    print('Initialisation de OneSignal ignorée pour le domaine : ${window.location.hostname}');
     return;
   }
+
   await _waitForOneSignal();
   _OneSignal.push(allowInterop((_) {
     _OneSignal.init(_InitOptions(
@@ -59,30 +71,24 @@ Future<void> initNotificationService() async {
     ));
   }));
 
-  // On positionne le verrou pour les prochains appels.
   _isOneSignalInitialized = true;
 }
 
 Future<void> promptForPushNotifications() async {
-  final hostname = window.location.hostname;
-  if (hostname != 'reclamations-internes.vercel.app' && hostname != 'localhost') {
+  if (!_isAllowedHostname()) {
     return;
   }
   await _waitForOneSignal();
-  // Utilisation de la nouvelle structure pour appeler requestPermission
   await _OneSignal.Notifications.requestPermission();
 }
 
 Future<String?> getPlayerIdFromService() async {
-  final hostname = window.location.hostname;
-  if (hostname != 'reclamations-internes.vercel.app' && hostname != 'localhost') {
+  if (!_isAllowedHostname()) {
     return null;
   }
   await _waitForOneSignal();
   return await _OneSignal.getPlayerId();
 }
-
-// --- Fonctions utilitaires ---
 
 Future<void> _waitForOneSignal() async {
   for (int i = 0; i < 15; i++) {
