@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 // Importation de l'écran de connexion personnalisé
 import 'screens/login_screen.dart';
+import 'screens/splash_screen.dart'; // Importer le nouvel écran
 // Importe notre service de notification abstrait, qui gère la logique web/mobile
 import 'services/notification_service.dart';
 import 'services/pwa_service.dart'; // Importe le nouveau service
@@ -34,7 +35,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue, // Couleur principale
         visualDensity: VisualDensity.adaptivePlatformDensity, // Densité visuelle adaptée à la plateforme
       ),
-      home: LoginScreen(), // Écran affiché au démarrage
+      home: SplashScreen(), // Écran affiché au démarrage
       debugShowCheckedModeBanner: false, // Désactive le bandeau "debug"
     );
   }

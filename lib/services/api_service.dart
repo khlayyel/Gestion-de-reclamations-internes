@@ -92,8 +92,11 @@ class ApiService {
   // Méthode pour se déconnecter
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
+    // On efface toutes les données de session stockées localement
+    await prefs.remove('userId');
     await prefs.remove('userName');
     await prefs.remove('userEmail');
     await prefs.remove('userRole');
+    await prefs.remove('userDepartments');
   }
 }
