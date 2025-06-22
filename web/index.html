@@ -35,32 +35,6 @@
   
   <!-- OneSignal SDK -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <script>
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "6ce72582-adbc-4b70-a16b-6af977e59707",
-      });
-    });
-  </script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/OneSignalSDKWorker.js')
-        .then(function(reg) {
-          console.log('OneSignal Service Worker enregistré', reg);
-        })
-        .catch(function(err) {
-          console.error('Erreur lors de l\'enregistrement du Service Worker OneSignal', err);
-        });
-      navigator.serviceWorker.register('/OneSignalSDKUpdaterWorker.js')
-        .then(function(reg) {
-          console.log('OneSignal Updater Service Worker enregistré', reg);
-        })
-        .catch(function(err) {
-          console.error('Erreur lors de l\'enregistrement du Updater Service Worker OneSignal', err);
-        });
-    }
-  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

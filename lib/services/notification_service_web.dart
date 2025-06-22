@@ -49,6 +49,8 @@ class _InitOptions {
   external factory _InitOptions({
     String appId,
     bool allowLocalhostAsSecureOrigin,
+    String serviceWorkerPath,
+    String serviceWorkerUpdaterPath,
   });
 }
 
@@ -85,6 +87,8 @@ Future<void> initNotificationService() async {
       _OneSignal.init(_InitOptions(
         appId: '109a25e1-389f-4f6b-a279-813a36f735c0',
         allowLocalhostAsSecureOrigin: true,
+        serviceWorkerPath: 'OneSignalSDKWorker.js',
+        serviceWorkerUpdaterPath: 'OneSignalSDKUpdaterWorker.js',
       ));
     }));
   } catch (e) {
@@ -107,32 +111,21 @@ Future<String?> getPlayerIdFromService() async {
   }
   await _waitForOneSignal();
 
-  // Vérifie la présence du Service Worker
-  try {
-    final sws = await window.navigator.serviceWorker?.getRegistrations();
-    final found = sws?.any((reg) => reg.active?.scriptURL?.contains('OneSignalSDKWorker.js') ?? false) ?? false;
-    if (found) {
-      print('DEBUG: Service Worker OneSignal trouvé et actif.');
-    } else {
-      print('DEBUG: Service Worker OneSignal NON trouvé ou inactif !');
-    }
-  } catch (e) {
-    print('DEBUG: Erreur lors de la vérification du Service Worker: $e');
-  }
-
   // Attendre jusqu'à 5 secondes que le Player ID soit généré
   for (int i = 0; i < 25; i++) {
     final pushSub = _OneSignal.User.pushSubscription;
-    print('DEBUG: pushSubscription = '
-        + (pushSub == null ? 'null' : pushSub.toString()));
     final id = pushSub?.id;
     if (id != null && id.isNotEmpty) {
-      print('DEBUG: Player ID OneSignal trouvé = $id');
+      print('✅ DEBUG: Player ID OneSignal trouvé = $id');
       return id;
+    }
+    // On logue seulement les premières tentatives pour ne pas polluer la console
+    if (i < 5) {
+      print('⏳ DEBUG: Attente du Player ID... (essai ${i + 1})');
     }
     await Future.delayed(const Duration(milliseconds: 200));
   }
-  print('DEBUG: Player ID OneSignal toujours null après attente');
+  print('❌ DEBUG: Player ID OneSignal toujours null après 5 secondes.');
   return null;
 }
 
