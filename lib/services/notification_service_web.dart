@@ -4,6 +4,7 @@ library onesignal_web;
 import 'dart:async';
 import 'package:js/js.dart';
 import 'dart:html';
+import '../config/onesignal_config.dart';
 
 // Verrou pour s'assurer que OneSignal n'est initialisé qu'une seule fois.
 bool _isOneSignalInitialized = false;
@@ -57,14 +58,13 @@ class _InitOptions {
 // --- Fonctions utilitaires ---
 
 // Fonction pour vérifier si le nom de domaine est autorisé.
-// Autorise localhost et tous les sous-domaines de vercel.app.
 bool _isAllowedHostname() {
   final hostname = window.location.hostname;
   // On s'assure que le nom de domaine n'est pas nul avant de continuer.
   if (hostname == null) {
     return false;
   }
-  return hostname == 'localhost' || hostname.endsWith('.vercel.app');
+  return OneSignalConfig.isDomainAllowed(hostname);
 }
 
 // --- Fonctions du service ---
@@ -85,12 +85,13 @@ Future<void> initNotificationService() async {
     await _waitForOneSignal();
     _OneSignal.push(allowInterop((_) {
       _OneSignal.init(_InitOptions(
-        appId: '109a25e1-389f-4f6b-a279-813a36f735c0',
+        appId: OneSignalConfig.appId,
         allowLocalhostAsSecureOrigin: true,
         serviceWorkerPath: 'OneSignalSDKWorker.js',
         serviceWorkerUpdaterPath: 'OneSignalSDKUpdaterWorker.js',
       ));
     }));
+    print('✅ OneSignal Web initialisé avec succès');
   } catch (e) {
     // Si l'initialisation échoue (ex: mauvais domaine), on l'affiche en console mais on ne bloque pas l'app.
     print('ERREUR : L\'initialisation de OneSignal a échoué. Veuillez vérifier la configuration de votre domaine sur le tableau de bord OneSignal. Erreur: $e');

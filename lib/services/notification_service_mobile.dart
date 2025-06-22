@@ -1,8 +1,9 @@
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import '../config/onesignal_config.dart';
 
 Future<void> initNotificationService() async {
   OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
-  await OneSignal.initialize("109a25e1-389f-4f6b-a279-813a36f735c0");
+  await OneSignal.initialize(OneSignalConfig.appId);
   await OneSignal.Notifications.requestPermission(true);
 }
 
