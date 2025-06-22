@@ -106,6 +106,20 @@ Future<String?> getPlayerIdFromService() async {
     return null;
   }
   await _waitForOneSignal();
+
+  // Vérifie la présence du Service Worker
+  try {
+    final sws = await window.navigator.serviceWorker?.getRegistrations();
+    final found = sws?.any((reg) => reg.active?.scriptURL?.contains('OneSignalSDKWorker.js') ?? false) ?? false;
+    if (found) {
+      print('DEBUG: Service Worker OneSignal trouvé et actif.');
+    } else {
+      print('DEBUG: Service Worker OneSignal NON trouvé ou inactif !');
+    }
+  } catch (e) {
+    print('DEBUG: Erreur lors de la vérification du Service Worker: $e');
+  }
+
   // Attendre jusqu'à 5 secondes que le Player ID soit généré
   for (int i = 0; i < 25; i++) {
     final pushSub = _OneSignal.User.pushSubscription;
