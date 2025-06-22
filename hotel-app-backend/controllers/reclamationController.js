@@ -1,6 +1,7 @@
+const nodemailer = require('nodemailer');
 const Reclamation = require('../models/reclamation');
 const User = require('../models/user');
-const nodemailer = require('nodemailer');
+const { sendNotification } = require('../utils/notificationService');
 
 // Configuration du service d'envoi d'email (Gmail ici)
 const transporter = nodemailer.createTransport({
@@ -62,14 +63,22 @@ exports.createReclamation = async (req, res) => {
     const reclamation = new Reclamation(reclamationData);
     await reclamation.save();
 
-    // Notifier tous les admins et staffs concernés
+    // Notifier les utilisateurs concernés par email ET push
     const admins = await User.find({ role: 'admin' });
     const staffs = await User.find({ role: 'staff', departments: { $in: reclamation.departments } });
-    const emails = [
-      ...admins.map(a => a.email),
-      ...staffs.map(s => s.email)
-    ].filter((v, i, a) => a.indexOf(v) === i); // Unicité
-    await sendReclamationNotification(reclamation, emails);
+    
+    const allUsersToNotify = [...admins, ...staffs];
+    const uniqueUsers = Array.from(new Set(allUsersToNotify.map(u => u.id))).map(id => {
+        return allUsersToNotify.find(u => u.id === id);
+    });
+
+    const playerIds = uniqueUsers.flatMap(u => u.playerIds).filter(Boolean); // Récupère tous les playerIds et filtre les valeurs null/undefined
+
+    if (playerIds.length > 0) {
+        const heading = `Nouveau: ${reclamation.objet}`;
+        const content = `Une nouvelle réclamation a été créée pour le(s) département(s): ${reclamation.departments.join(', ')}.`;
+        await sendNotification(playerIds, heading, content);
+    }
 
     // Émettre l'événement WebSocket
     req.app.get('io').emit('reclamationsUpdated');
@@ -155,6 +164,24 @@ exports.updateReclamation = async (req, res) => {
     }
 
     console.log('Réclamation mise à jour:', updatedReclamation);
+
+    // Envoyer une notification push
+    const admins = await User.find({ role: 'admin' });
+    const staffs = await User.find({ role: 'staff', departments: { $in: updatedReclamation.departments } });
+    
+    const allUsersToNotify = [...admins, ...staffs];
+     const uniqueUsers = Array.from(new Set(allUsersToNotify.map(u => u.id))).map(id => {
+        return allUsersToNotify.find(u => u.id === id);
+    });
+
+    const playerIds = uniqueUsers.flatMap(u => u.playerIds).filter(Boolean);
+
+    if (playerIds.length > 0) {
+        const heading = `Mise à jour: ${updatedReclamation.objet}`;
+        const content = `La réclamation concernant le(s) département(s) ${updatedReclamation.departments.join(', ')} a été modifiée.`;
+        await sendNotification(playerIds, heading, content);
+    }
+
     // Émettre l'événement WebSocket
     req.app.get('io').emit('reclamationsUpdated');
     res.status(200).json(updatedReclamation);

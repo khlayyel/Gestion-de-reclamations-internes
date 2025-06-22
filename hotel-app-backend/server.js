@@ -1,4 +1,3 @@
-// Importation des modules nécessaires
 require('dotenv').config(); // Charger les variables d'environnement
 const express = require('express'); // Framework web pour Node.js
 const mongoose = require('mongoose'); // ODM pour MongoDB

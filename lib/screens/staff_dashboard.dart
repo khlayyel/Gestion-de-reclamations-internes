@@ -52,7 +52,7 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
   void initState() {
     super.initState();
     _fetchUserInfo();
-    _fetchReclamations();
+    _reclamations = _fetchReclamations();
     // Connexion WebSocket
     _channel = WebSocketChannel.connect(
       Uri.parse('wss://gestion-de-reclamations-internes.onrender.com'),
@@ -82,13 +82,13 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
     });
   }
 
-  void _fetchReclamations() async {
+  Future<List<Reclamation>> _fetchReclamations() async {
     String? userId = await ApiService.obtenirIdUtilisateurConnecte();
-    setState(() {
-      _reclamations = userId != null
-        ? ReclamationService.getReclamationsByUser(userId)
-        : Future.value([]);
-    });
+    if (userId != null) {
+      return ReclamationService.getReclamationsByUser(userId);
+    }
+    // Retourne une liste vide si l'utilisateur n'est pas trouvé
+    return []; 
   }
 
   Future<void> _takeInCharge(Reclamation r) async {

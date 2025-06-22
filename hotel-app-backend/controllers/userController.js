@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const { sendUserCredentialsEmail } = require('../utils/emailService');
+const { sendNotification } = require('../utils/notificationService');
 
 // Créer un nouvel utilisateur
 exports.createUser = async (req, res) => {
@@ -131,9 +132,42 @@ exports.updateUser = async (req, res) => {
       adminName: modifiePar
     });
 
+    // Envoyer une notification push à l'utilisateur modifié
+    if (updatedUser.playerIds && updatedUser.playerIds.length > 0) {
+      const heading = "Votre compte a été mis à jour";
+      const content = "Vos informations ont été modifiées par un administrateur. Consultez vos e-mails pour plus de détails.";
+      await sendNotification(updatedUser.playerIds, heading, content);
+    }
+
     res.status(200).json({ message: 'Utilisateur modifié avec succès', user: updatedUser });
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la modification de l\'utilisateur', error: error.message });
+  }
+};
+
+// Nouvelle fonction pour mettre à jour le playerId
+exports.updatePlayerId = async (req, res) => {
+  const { userId, playerId } = req.body;
+
+  if (!userId || !playerId) {
+    return res.status(400).json({ message: 'userId et playerId sont requis.' });
+  }
+
+  try {
+    // Ajoute le nouveau playerId au tableau s'il n'y est pas déjà
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $addToSet: { playerIds: playerId } }, // $addToSet évite les doublons
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+    }
+
+    res.status(200).json({ message: 'Player ID mis à jour avec succès.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la mise à jour du Player ID.', error: error.message });
   }
 };
 

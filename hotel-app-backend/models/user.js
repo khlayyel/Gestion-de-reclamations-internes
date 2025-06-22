@@ -13,7 +13,8 @@ const userSchema = new mongoose.Schema({
     required: function() { return this.role === 'staff'; } // Obligatoire pour le staff
   },
   ajoutePar: { type: String }, // Nom de l'admin qui a ajouté
-  modifiePar: { type: String } // Nom de l'admin qui a modifié
+  modifiePar: { type: String }, // Nom de l'admin qui a modifié
+  playerIds: { type: [String], default: [] } // Pour les notifications push OneSignal
 }, { timestamps: true }); // Ajoute createdAt et updatedAt automatiquement
 
 // Création et exportation du modèle mongoose

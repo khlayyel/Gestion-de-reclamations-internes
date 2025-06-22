@@ -2,11 +2,19 @@
 import 'package:flutter/material.dart';
 // Importation de l'écran de connexion personnalisé
 import 'screens/login_screen.dart';
+// Importe notre service de notification abstrait, qui gère la logique web/mobile
+import 'services/notification_service.dart';
 
 // Point d'entrée principal de l'application
-void main() {
+void main() async {
   // S'assure que le binding de Flutter est initialisé avant d'exécuter l'application
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialise notre service de notification.
+  // Sur mobile, cela configure OneSignal.
+  // Sur web, cela attend que le SDK JS soit prêt.
+  await NotificationService.init();
+
   // Lance l'application en affichant le widget MyApp
   runApp(MyApp());
 }

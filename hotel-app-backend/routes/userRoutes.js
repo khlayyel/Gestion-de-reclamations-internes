@@ -17,6 +17,9 @@ router.post('/login', userController.loginUser);
 // ✅ Nouvelle route pour mettre à jour un utilisateur par ID
 router.put('/update/:id', userController.updateUser);
 
+// Route pour lier un player_id OneSignal à un utilisateur
+router.post('/update-player-id', userController.updatePlayerId);
+
 // Route pour supprimer un utilisateur par ID
 router.delete('/:id', userController.deleteUser);
 

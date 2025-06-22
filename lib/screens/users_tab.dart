@@ -9,11 +9,9 @@ class UsersTab extends StatefulWidget {
 
 // State de l'onglet utilisateurs
 class _UsersTabState extends State<UsersTab> {
-  // Liste future des utilisateurs
-  late Future<List<dynamic>> _users;
-  // Liste filtrée affichée
+  late Future<List<dynamic>> _usersFuture;
+  List<dynamic> _allUsers = [];
   List<dynamic> _filteredUsers = [];
-  // Valeur de recherche
   String _searchQuery = '';
   // Filtres sélectionnés
   String? _selectedRole;
@@ -29,25 +27,36 @@ class _UsersTabState extends State<UsersTab> {
   @override
   void initState() {
     super.initState();
-    _fetchUsers(); // Récupère les utilisateurs au démarrage
+    _usersFuture = _fetchAndSetUsers();
   }
 
-  // Récupère la liste des utilisateurs
-  void _fetchUsers() {
-    setState(() {
-      _users = UserService.getUsers();
-      _users.then((users) {
+  Future<List<dynamic>> _fetchAndSetUsers() async {
+    try {
+      final users = await UserService.getUsers();
+      if (mounted) {
         setState(() {
+          _allUsers = users;
           _filteredUsers = users;
         });
-      });
+      }
+      return users;
+    } catch (e) {
+      // Gérer l'erreur, par exemple en affichant un message
+      print("Erreur lors de la récupération des utilisateurs: $e");
+      return []; // Retourner une liste vide en cas d'erreur
+    }
+  }
+
+  void _refreshUsers() {
+    setState(() {
+      _usersFuture = _fetchAndSetUsers();
     });
   }
 
   // Supprime un utilisateur
   void _deleteUser(String id) async {
     await UserService.deleteUser(id, context);
-    _fetchUsers();
+    _refreshUsers();
   }
 
   // Affiche le formulaire d'ajout/modification d'utilisateur
@@ -56,28 +65,21 @@ class _UsersTabState extends State<UsersTab> {
       context: context,
       builder: (context) => UserFormDialog(user: user),
     );
-    if (result == true) _fetchUsers();
+    if (result == true) _refreshUsers();
   }
 
   // Filtre la liste selon la recherche
-  void _filterUsers(String query) async {
-    final users = await _users;
+  void _filterUsers(String query) {
     setState(() {
       _searchQuery = query;
-      _filteredUsers = users.where((u) {
-        final nameMatch = (u['name'] ?? '').toLowerCase().contains(query.toLowerCase());
-        final roleMatch = _selectedRole == null || u['role'] == _selectedRole;
-        final departmentMatch = _selectedDepartment == null || (u['departments'] != null && (u['departments'] as List).contains(_selectedDepartment));
-        return nameMatch && roleMatch && departmentMatch;
-      }).toList();
+      _applyFilters();
     });
   }
 
   // Applique les filtres sélectionnés
-  void _applyFilters() async {
-    final users = await _users;
+  void _applyFilters() {
     setState(() {
-      _filteredUsers = users.where((u) {
+      _filteredUsers = _allUsers.where((u) {
         final nameMatch = (u['name'] ?? '').toLowerCase().contains(_searchQuery.toLowerCase());
         final roleMatch = _selectedRole == null || u['role'] == _selectedRole;
         final departmentMatch = _selectedDepartment == null || (u['departments'] != null && (u['departments'] as List).contains(_selectedDepartment));
@@ -234,7 +236,7 @@ class _UsersTabState extends State<UsersTab> {
                 ),
                 Expanded(
                   child: FutureBuilder<List<dynamic>>(
-                    future: _users,
+                    future: _usersFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator());

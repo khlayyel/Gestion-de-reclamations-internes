@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../services/notification_service.dart';
 import '../services/api_service.dart';
+import '../services/user_service.dart';
 import 'admin_dashboard.dart';
 import 'staff_dashboard.dart';
 
@@ -52,7 +54,22 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
     try {
       final user = await ApiService.login(nameController.text, passwordController.text);
-      if (user == null) {
+      if (user != null) {
+        final String? playerId = await NotificationService.getPlayerId();
+        final String? userId = user['_id'] ?? user['id'];
+
+        if (playerId != null && userId != null) {
+          await UserService.updatePlayerId(userId, playerId);
+        }
+
+        if (mounted) {
+          if (user['role'] == 'admin') {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => AdminDashboard()));
+          } else {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => StaffDashboard()));
+          }
+        }
+      } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -60,14 +77,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               backgroundColor: Colors.red,
             ),
           );
-        }
-      } else {
-        if (mounted) {
-          if (user['role'] == 'admin') {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => AdminDashboard()));
-          } else {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => StaffDashboard()));
-          }
         }
       }
     } catch (e) {

@@ -28,17 +28,16 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
   @override
   void initState() {
     super.initState();
-    _fetchReclamations();
+    _reclamations = _fetchReclamations();
     _fetchUserRole();
   }
 
-  void _fetchReclamations() async {
+  Future<List<Reclamation>> _fetchReclamations() async {
     String? userId = await ApiService.obtenirIdUtilisateurConnecte();
-    setState(() {
-      _reclamations = userId != null
-        ? ReclamationService.getReclamationsByUser(userId)
-        : Future.value([]);
-    });
+    if (userId != null) {
+      return ReclamationService.getReclamationsByUser(userId);
+    }
+    return [];
   }
 
   void _fetchUserRole() async {
@@ -50,7 +49,7 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
 
   void _deleteReclamation(String id) async {
     await ReclamationService.deleteReclamation(id, context);
-    _fetchReclamations();
+    _refreshReclamations();
   }
 
   void _showReclamationForm({Reclamation? reclamation}) async {
@@ -58,7 +57,7 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
       context: context,
       builder: (context) => ReclamationFormDialog(reclamation: reclamation),
     );
-    if (result == true) _fetchReclamations();
+    if (result == true) _refreshReclamations();
   }
 
   List<Reclamation> _applyFilters(List<Reclamation> list) {
@@ -189,7 +188,7 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
         'In Progress',
         assignedTo: 'staff', // Utiliser directement le nom "staff"
       );
-      _fetchReclamations();
+      _refreshReclamations();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Réclamation prise en charge avec succès'),
@@ -206,6 +205,12 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
     }
   }
 
+  void _refreshReclamations() {
+    setState(() {
+      _reclamations = _fetchReclamations();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isWide = MediaQuery.of(context).size.width > 1000;
@@ -219,7 +224,7 @@ class _ReclamationsTabState extends State<ReclamationsTab> {
                   context,
                   MaterialPageRoute(builder: (context) => ReclamationForm()),
                 );
-                if (result == true) _fetchReclamations();
+                if (result == true) _refreshReclamations();
               },
               child: Icon(Icons.add),
               backgroundColor: Colors.blue,

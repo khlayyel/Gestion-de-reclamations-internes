@@ -18,7 +18,7 @@ class _AdminStatsDashboardState extends State<AdminStatsDashboard> with SingleTi
   @override
   void initState() {
     super.initState();
-    _fetchReclamations();
+    _reclamations = _fetchReclamations();
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -36,13 +36,12 @@ class _AdminStatsDashboardState extends State<AdminStatsDashboard> with SingleTi
     super.dispose();
   }
 
-  void _fetchReclamations() async {
+  Future<List<Reclamation>> _fetchReclamations() async {
     String? userId = await ApiService.obtenirIdUtilisateurConnecte();
-    setState(() {
-      _reclamations = userId != null
-        ? ReclamationService.getReclamationsByUser(userId)
-        : Future.value([]);
-    });
+    if (userId != null) {
+      return ReclamationService.getReclamationsByUser(userId);
+    }
+    return [];
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
