@@ -26,7 +26,7 @@ class _PushSubscription {
 @JS()
 @anonymous
 class _OneSignalUser {
-  external _PushSubscription get pushSubscription;
+  external _PushSubscription? get pushSubscription;
 }
 
 // Classe pour l'objet principal OneSignal
@@ -106,7 +106,7 @@ Future<String?> getPlayerIdFromService() async {
     return null;
   }
   await _waitForOneSignal();
-  return _OneSignal.User.pushSubscription.id;
+  return _OneSignal.User.pushSubscription?.id;
 }
 
 Future<void> _waitForOneSignal() async {
