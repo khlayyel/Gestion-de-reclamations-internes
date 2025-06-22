@@ -8,7 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 class UserService {
   // Getter pour l'URL de base de l'API
   static String get baseUrl {
-    return 'https://gestion-de-reclamations-internes.onrender.com';
+    return kDebugMode
+        ? 'http://localhost:5000' // URL pour le développement local
+        : 'https://gestion-de-reclamations-internes.onrender.com'; // URL pour la production
   }
 
   // Récupérer la liste de tous les utilisateurs
@@ -90,9 +92,11 @@ class UserService {
     );
 
     if (response.statusCode != 200) {
-      print('Erreur lors de la mise à jour du player ID: ${response.body}');
+      // Affiche une alerte visible si la mise à jour échoue
+      debugPrint('Erreur lors de la mise à jour du player ID: [31m${response.body}[0m');
+      // Optionnel : tu peux aussi afficher un SnackBar si tu passes un BuildContext
     } else {
-      print('Player ID mis à jour avec succès pour l\'utilisateur $userId');
+      debugPrint('Player ID mis à jour avec succès pour l\'utilisateur $userId');
     }
   }
 
