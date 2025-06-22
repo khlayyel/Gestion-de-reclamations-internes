@@ -55,13 +55,17 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     try {
       final user = await ApiService.login(nameController.text, passwordController.text);
       if (user != null) {
-        await NotificationService.promptForPushNotifications();
-        
-        final String? playerId = await NotificationService.getPlayerId();
-        final String? userId = user['_id'] ?? user['id'];
+        try {
+          await NotificationService.promptForPushNotifications();
+          
+          final String? playerId = await NotificationService.getPlayerId();
+          final String? userId = user['_id'] ?? user['id'];
 
-        if (playerId != null && userId != null) {
-          await UserService.updatePlayerId(userId, playerId);
+          if (playerId != null && userId != null) {
+            await UserService.updatePlayerId(userId, playerId);
+          }
+        } catch (e) {
+          print('AVERTISSEMENT: La configuration des notifications a échoué mais la connexion continue. Erreur: $e');
         }
 
         if (mounted) {
