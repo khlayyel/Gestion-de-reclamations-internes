@@ -85,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur de connexion: ${e.toString()}'),
+            content: Text('Erreur de connexion. Veuillez vérifier vos identifiants ou votre connexion.'),
             backgroundColor: Colors.red,
           ),
         );

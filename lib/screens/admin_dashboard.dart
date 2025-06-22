@@ -4,6 +4,7 @@ import 'users_tab.dart';
 import 'admin_stats_dashboard.dart';
 import '../services/api_service.dart';
 import '../screens/login_screen.dart';
+import '../services/pwa_service.dart';
 
 class AdminDashboard extends StatefulWidget {
   @override
@@ -68,6 +69,21 @@ class _AdminDashboardState extends State<AdminDashboard> with SingleTickerProvid
       appBar: AppBar(
         title: Text(_pageTitles[_selectedPage]),
         actions: [
+          ValueListenableBuilder<bool>(
+            valueListenable: PwaService.canBeInstalled,
+            builder: (context, canBeInstalled, child) {
+              if (canBeInstalled) {
+                return IconButton(
+                  icon: Icon(Icons.download_for_offline),
+                  tooltip: 'Installer l\'application',
+                  onPressed: () {
+                    PwaService.install();
+                  },
+                );
+              }
+              return SizedBox.shrink();
+            },
+          ),
           IconButton(
             icon: Icon(Icons.logout),
             tooltip: 'Déconnexion',

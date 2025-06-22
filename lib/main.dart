@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 // Importe notre service de notification abstrait, qui gère la logique web/mobile
 import 'services/notification_service.dart';
+import 'services/pwa_service.dart'; // Importe le nouveau service
 
 // Point d'entrée principal de l'application
 void main() async {
@@ -14,6 +15,9 @@ void main() async {
   // Sur mobile, cela configure OneSignal.
   // Sur web, cela attend que le SDK JS soit prêt.
   await NotificationService.init();
+
+  // Initialise le service PWA pour écouter l'événement d'installation
+  PwaService.init();
 
   // Lance l'application en affichant le widget MyApp
   runApp(MyApp());

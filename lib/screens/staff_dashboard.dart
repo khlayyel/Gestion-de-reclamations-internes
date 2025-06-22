@@ -9,6 +9,7 @@ import 'dart:async';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:hotel_staff_app/screens/login_screen.dart';
 import '../services/user_service.dart';
+import '../services/pwa_service.dart';
 
 class StaffDashboard extends StatefulWidget {
   @override
@@ -583,6 +584,22 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
           ),
         ),
         actions: [
+          // Ajout du bouton d'installation PWA
+          ValueListenableBuilder<bool>(
+            valueListenable: PwaService.canBeInstalled,
+            builder: (context, canBeInstalled, child) {
+              if (canBeInstalled) {
+                return IconButton(
+                  icon: Icon(Icons.download_for_offline),
+                  tooltip: 'Installer l\'application',
+                  onPressed: () {
+                    PwaService.install();
+                  },
+                );
+              }
+              return SizedBox.shrink(); // Ne rien afficher si non installable
+            },
+          ),
           // Ajout : bouton de tri uniquement pour l'onglet "Mes réclamations"
           if (_selectedIndex == 1)
             IconButton(

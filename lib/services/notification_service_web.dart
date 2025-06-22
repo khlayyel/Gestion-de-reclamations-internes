@@ -12,7 +12,8 @@ class _OneSignal {
   external static void push(dynamic item);
   external static void init(_InitOptions options);
   external static Future<String?> getPlayerId();
-  external static Future<void> showSlidedownPrompt();
+  @JS('Notifications.requestPermission')
+  external static Future<bool> requestPermission();
 }
 
 @JS()
@@ -47,7 +48,7 @@ Future<void> promptForPushNotifications() async {
     return;
   }
   await _waitForOneSignal();
-  await _OneSignal.showSlidedownPrompt();
+  await _OneSignal.requestPermission();
 }
 
 Future<String?> getPlayerIdFromService() async {
