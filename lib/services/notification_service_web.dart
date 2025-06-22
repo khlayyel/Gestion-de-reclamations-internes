@@ -79,7 +79,7 @@ Future<void> initNotificationService() async {
   }
 }
 
-Future<void> promptForPushNotifications() async {
+Future<void> promptForPushNotificationsFromService() async {
   if (!_isAllowedHostname()) {
     return;
   }

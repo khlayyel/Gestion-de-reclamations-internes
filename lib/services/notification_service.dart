@@ -21,6 +21,6 @@ class NotificationService {
   /// - Sur le web, cela affiche le "slidedown prompt" de OneSignal.
   /// - Sur mobile, cela déclenche la demande de permission native.
   static Future<void> promptForPushNotifications() {
-    return promptForPushNotifications();
+    return promptForPushNotificationsFromService();
   }
 } 

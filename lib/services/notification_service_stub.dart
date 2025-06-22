@@ -9,6 +9,6 @@ Future<String?> getPlayerIdFromService() async {
   return null;
 }
 
-Future<void> promptForPushNotifications() async {
-  // Ne fait rien
+Future<void> promptForPushNotificationsFromService() async {
+  // Stub : ne fait rien
 } 
