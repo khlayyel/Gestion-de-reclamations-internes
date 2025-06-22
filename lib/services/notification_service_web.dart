@@ -106,7 +106,20 @@ Future<String?> getPlayerIdFromService() async {
     return null;
   }
   await _waitForOneSignal();
-  return _OneSignal.User.pushSubscription?.id;
+  // Attendre jusqu'à 5 secondes que le Player ID soit généré
+  for (int i = 0; i < 25; i++) {
+    final pushSub = _OneSignal.User.pushSubscription;
+    print('DEBUG: pushSubscription = '
+        + (pushSub == null ? 'null' : pushSub.toString()));
+    final id = pushSub?.id;
+    if (id != null && id.isNotEmpty) {
+      print('DEBUG: Player ID OneSignal trouvé = $id');
+      return id;
+    }
+    await Future.delayed(const Duration(milliseconds: 200));
+  }
+  print('DEBUG: Player ID OneSignal toujours null après attente');
+  return null;
 }
 
 Future<void> _waitForOneSignal() async {
