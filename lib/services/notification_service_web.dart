@@ -5,6 +5,9 @@ import 'dart:async';
 import 'package:js/js.dart';
 import 'dart:html';
 
+// Verrou pour s'assurer que OneSignal n'est initialisé qu'une seule fois.
+bool _isOneSignalInitialized = false;
+
 // --- Définitions pour l'interop JS ---
 
 // Classe pour l'objet Notifications de OneSignal
@@ -38,6 +41,11 @@ class _InitOptions {
 // --- Fonctions du service ---
 
 Future<void> initNotificationService() async {
+  // On vérifie si le service a déjà été initialisé. Si oui, on ne fait rien.
+  if (_isOneSignalInitialized) {
+    return;
+  }
+
   final hostname = window.location.hostname;
   if (hostname != 'reclamations-internes.vercel.app' && hostname != 'localhost') {
     print('Initialisation de OneSignal ignorée pour le domaine : $hostname');
@@ -50,6 +58,9 @@ Future<void> initNotificationService() async {
       allowLocalhostAsSecureOrigin: true,
     ));
   }));
+
+  // On positionne le verrou pour les prochains appels.
+  _isOneSignalInitialized = true;
 }
 
 Future<void> promptForPushNotifications() async {
