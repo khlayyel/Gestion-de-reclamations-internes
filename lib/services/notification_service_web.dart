@@ -7,13 +7,23 @@ import 'dart:html';
 
 // --- Définitions pour l'interop JS ---
 
+// Classe pour l'objet Notifications de OneSignal
+@JS()
+@anonymous
+class _OneSignalNotifications {
+  external Future<bool> requestPermission();
+}
+
+// Classe pour l'objet principal OneSignal
 @JS('OneSignal')
 class _OneSignal {
   external static void push(dynamic item);
   external static void init(_InitOptions options);
   external static Future<String?> getPlayerId();
-  @JS('Notifications.requestPermission')
-  external static Future<bool> requestPermission();
+
+  // Getter pour accéder à l'objet Notifications
+  @JS('Notifications')
+  external static _OneSignalNotifications get Notifications;
 }
 
 @JS()
@@ -48,7 +58,8 @@ Future<void> promptForPushNotifications() async {
     return;
   }
   await _waitForOneSignal();
-  await _OneSignal.requestPermission();
+  // Utilisation de la nouvelle structure pour appeler requestPermission
+  await _OneSignal.Notifications.requestPermission();
 }
 
 Future<String?> getPlayerIdFromService() async {

@@ -10,6 +10,10 @@ class BeforeInstallPromptEvent {
   external void prompt();
 }
 
+// On déclare la fonction JS globale `addEventListener`
+@JS('window.addEventListener')
+external void _addEventListener(String type, Function callback);
+
 // Classe statique pour gérer la logique PWA
 class PwaService {
   static BeforeInstallPromptEvent? _installPromptEvent;
@@ -33,14 +37,11 @@ class PwaService {
     }
   }
 
-  @JS('window.addEventListener')
-  external static void _addEventListener(String type, Function callback);
-
   // Méthode privée pour écouter l'événement
   static void _listenForInstallPrompt() {
     _addEventListener('beforeinstallprompt', allowInterop((event) {
       // Le navigateur nous empêche d'afficher la popup par défaut
-      event.preventDefault(); 
+      event.preventDefault();
       // On sauvegarde l'événement pour l'utiliser plus tard
       _installPromptEvent = event as BeforeInstallPromptEvent;
       // On notifie l'UI que le bouton peut être affiché
