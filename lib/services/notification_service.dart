@@ -23,4 +23,10 @@ class NotificationService {
   static Future<void> promptForPushNotifications() {
     return promptForPushNotificationsFromService();
   }
+
+  /// Force l'abonnement push de l'utilisateur.
+  /// À appeler après la demande de permission pour s'assurer que l'abonnement est actif.
+  static Future<void> subscribeUserToPush() {
+    return subscribeUserToPushFromService();
+  }
 } 

@@ -57,6 +57,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       if (user != null) {
         try {
           await NotificationService.promptForPushNotifications();
+          await NotificationService.subscribeUserToPush();
           final String? userId = user['_id'] ?? user['id'];
           String? playerId;
           for (int i = 0; i < 40; i++) { // 40 x 500ms = 20 secondes max

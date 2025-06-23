@@ -123,6 +123,47 @@ Future<void> promptForPushNotificationsFromService() async {
   await _OneSignal.Notifications.requestPermission();
 }
 
+Future<void> subscribeUserToPushFromService() async {
+  print('[OneSignal] Forçage de l\'abonnement push...');
+  if (!_isAllowedHostname()) {
+    print('[OneSignal] Domaine non autorisé pour l\'abonnement push.');
+    return;
+  }
+  await _waitForOneSignal();
+
+  try {
+    // Force l'opt-in pour l'abonnement push en utilisant la bonne API v16
+    print('[OneSignal] Appel à OneSignal.User.pushSubscription.optIn()');
+    
+    // Utiliser la méthode correcte pour OneSignal v16
+    final pushSub = _OneSignal.User.pushSubscription;
+    if (pushSub != null) {
+      // En OneSignal v16, on utilise directement la demande de permission
+      // qui force automatiquement l'opt-in si la permission est accordée
+      await _OneSignal.Notifications.requestPermission();
+    }
+    
+    // Attendre que l'abonnement soit effectif (isPushEnabled = true)
+    print('[OneSignal] Attente que l\'abonnement push soit effectif...');
+    for (int i = 0; i < 40; i++) {
+      final currentPushSub = _OneSignal.User.pushSubscription;
+      final id = currentPushSub?.id;
+      print('[OneSignal] Vérification abonnement $i : Player ID = $id');
+      
+      if (id != null && id.isNotEmpty) {
+        print('✅ [OneSignal] Abonnement push effectif - Player ID = $id');
+        return;
+      }
+      
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+    
+    print('⚠️ [OneSignal] Abonnement push non confirmé après 20 secondes');
+  } catch (e) {
+    print('❌ [OneSignal] Erreur lors du forçage de l\'abonnement push : $e');
+  }
+}
+
 Future<String?> getPlayerIdFromService() async {
   print('[OneSignal] Démarrage de la récupération du Player ID...');
   if (!_isAllowedHostname()) {

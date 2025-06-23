@@ -11,4 +11,8 @@ Future<String?> getPlayerIdFromService() async {
 
 Future<void> promptForPushNotificationsFromService() async {
   // Stub : ne fait rien
+}
+
+Future<void> subscribeUserToPushFromService() async {
+  // Stub : ne fait rien
 } 

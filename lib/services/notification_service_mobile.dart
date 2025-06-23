@@ -16,3 +16,14 @@ Future<void> promptForPushNotificationsFromService() async {
   // On peut la redemander explicitement si nécessaire.
   await OneSignal.Notifications.requestPermission(true);
 }
+
+Future<void> subscribeUserToPushFromService() async {
+  print('[OneSignal Mobile] Forçage de l\'abonnement push...');
+  try {
+    // Sur mobile, on force l'opt-in pour l'abonnement push
+    await OneSignal.User.pushSubscription.optIn();
+    print('✅ [OneSignal Mobile] Abonnement push forcé avec succès');
+  } catch (e) {
+    print('❌ [OneSignal Mobile] Erreur lors du forçage de l\'abonnement push : $e');
+  }
+}
