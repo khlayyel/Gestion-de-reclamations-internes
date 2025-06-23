@@ -78,25 +78,15 @@ Future<void> initNotificationService() async {
   _isOneSignalInitialized = true;
 
   if (!_isAllowedHostname()) {
-    print('[OneSignal] Domaine non autorisé : [window.location.hostname]');
+    print('[OneSignal] Domaine non autorisé : ${window.location.hostname}');
     return;
   }
 
   try {
     await _waitForOneSignal();
-    print('[OneSignal] SDK détecté, vérification des Service Workers...');
-    if (window.navigator.serviceWorker != null) {
-      final registrations = await window.navigator.serviceWorker!.getRegistrations();
-      print('[OneSignal] Nombre de Service Workers trouvés : [registrations.length]');
-      for (final reg in registrations) {
-        print('[OneSignal] Désenregistrement du Service Worker : [reg.scope]');
-        await reg.unregister();
-      }
-      print('[OneSignal] Tous les anciens Service Workers ont été désenregistrés.');
-    } else {
-      print('[OneSignal] Aucun support Service Worker détecté dans ce navigateur.');
-    }
-    print('[OneSignal] Initialisation OneSignal...');
+    print('[OneSignal] SDK détecté, initialisation OneSignal...');
+    
+    // Initialisation simple sans désenregistrement de Service Workers
     _OneSignal.push(allowInterop((_) {
       _OneSignal.init(_InitOptions(
         appId: OneSignalConfig.appId,
@@ -105,6 +95,7 @@ Future<void> initNotificationService() async {
         serviceWorkerUpdaterPath: 'OneSignalSDKUpdaterWorker.js',
       ));
     }));
+    
     print('✅ OneSignal Web initialisé avec succès');
   } catch (e) {
     print('❌ [OneSignal] ERREUR lors de l\'initialisation : $e');
@@ -132,33 +123,14 @@ Future<void> subscribeUserToPushFromService() async {
   await _waitForOneSignal();
 
   try {
-    // Force l'opt-in pour l'abonnement push en utilisant la bonne API v16
-    print('[OneSignal] Appel à OneSignal.User.pushSubscription.optIn()');
+    // Demander la permission et forcer l'abonnement
+    print('[OneSignal] Demande de permission et abonnement...');
+    await _OneSignal.Notifications.requestPermission();
     
-    // Utiliser la méthode correcte pour OneSignal v16
-    final pushSub = _OneSignal.User.pushSubscription;
-    if (pushSub != null) {
-      // En OneSignal v16, on utilise directement la demande de permission
-      // qui force automatiquement l'opt-in si la permission est accordée
-      await _OneSignal.Notifications.requestPermission();
-    }
+    // Attendre un peu que l'abonnement se fasse
+    await Future.delayed(const Duration(seconds: 2));
     
-    // Attendre que l'abonnement soit effectif (isPushEnabled = true)
-    print('[OneSignal] Attente que l\'abonnement push soit effectif...');
-    for (int i = 0; i < 40; i++) {
-      final currentPushSub = _OneSignal.User.pushSubscription;
-      final id = currentPushSub?.id;
-      print('[OneSignal] Vérification abonnement $i : Player ID = $id');
-      
-      if (id != null && id.isNotEmpty) {
-        print('✅ [OneSignal] Abonnement push effectif - Player ID = $id');
-        return;
-      }
-      
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
-    
-    print('⚠️ [OneSignal] Abonnement push non confirmé après 20 secondes');
+    print('✅ [OneSignal] Demande d\'abonnement push terminée');
   } catch (e) {
     print('❌ [OneSignal] Erreur lors du forçage de l\'abonnement push : $e');
   }
@@ -185,8 +157,8 @@ Future<String?> getPlayerIdFromService() async {
     print('[OneSignal] Permission accordée.');
   }
 
-  // Attendre jusqu'à 20 secondes que le Player ID soit généré
-  for (int i = 0; i < 100; i++) {
+  // Attendre jusqu'à 10 secondes que le Player ID soit généré
+  for (int i = 0; i < 20; i++) {
     final pushSub = _OneSignal.User.pushSubscription;
     final id = pushSub?.id;
     print('[OneSignal] Tentative $i : Player ID = $id');
@@ -194,12 +166,12 @@ Future<String?> getPlayerIdFromService() async {
       print('✅ DEBUG: Player ID OneSignal trouvé = $id');
       return id;
     }
-    if (i < 20) {
+    if (i < 10) {
       print('⏳ DEBUG: Attente du Player ID... (essai ${i + 1})');
     }
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(const Duration(milliseconds: 500));
   }
-  print('❌ DEBUG: Player ID OneSignal toujours null après 20 secondes.');
+  print('❌ DEBUG: Player ID OneSignal toujours null après 10 secondes.');
   return null;
 }
 
