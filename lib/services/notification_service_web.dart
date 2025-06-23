@@ -51,7 +51,6 @@ class _InitOptions {
     String appId,
     bool allowLocalhostAsSecureOrigin,
     String serviceWorkerPath,
-    String serviceWorkerUpdaterPath,
   });
 }
 
@@ -92,7 +91,6 @@ Future<void> initNotificationService() async {
         appId: OneSignalConfig.appId,
         allowLocalhostAsSecureOrigin: true,
         serviceWorkerPath: 'OneSignalSDKWorker.js',
-        serviceWorkerUpdaterPath: 'OneSignalSDKUpdaterWorker.js',
       ));
     }));
     
