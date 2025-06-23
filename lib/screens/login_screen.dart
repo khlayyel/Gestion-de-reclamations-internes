@@ -57,16 +57,20 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       if (user != null) {
         try {
           await NotificationService.promptForPushNotifications();
-          final String? playerId = await NotificationService.getPlayerId();
-          print('DEBUG: Player ID récupéré = '
-              + (playerId == null ? 'null' : playerId));
           final String? userId = user['_id'] ?? user['id'];
+          String? playerId;
+          for (int i = 0; i < 40; i++) { // 40 x 500ms = 20 secondes max
+            playerId = await NotificationService.getPlayerId();
+            print('DEBUG: Tentative $i - Player ID = \\${playerId ?? "null"}');
+            if (playerId != null && playerId.isNotEmpty) break;
+            await Future.delayed(const Duration(milliseconds: 500));
+          }
 
           if (playerId != null && userId != null) {
-            print('DEBUG: Envoi du Player ID au backend pour userId=$userId');
+            print('DEBUG: Envoi du Player ID au backend pour userId=\\$userId');
             await UserService.updatePlayerId(userId, playerId);
           } else {
-            print('DEBUG: Player ID non récupéré ou userId manquant');
+            print('DEBUG: Player ID non récupéré ou userId manquant après attente');
           }
         } catch (e) {
           print('AVERTISSEMENT: La configuration des notifications a échoué mais la connexion continue. Erreur: $e');
