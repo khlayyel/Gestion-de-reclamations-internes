@@ -9,7 +9,10 @@ const { Server } = require('socket.io'); // Pour le support WebSocket
 const app = express();
 
 // Utiliser CORS pour autoriser les requêtes cross-origin (toutes origines)
-app.use(cors());
+app.use(cors({
+  origin: 'https://reclamations-internes.vercel.app',
+  credentials: true
+}));
 
 // Middleware pour parser les requêtes JSON (body parser)
 app.use(express.json());
