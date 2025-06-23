@@ -70,19 +70,33 @@ bool _isAllowedHostname() {
 // --- Fonctions du service ---
 
 Future<void> initNotificationService() async {
+  debugPrint('[OneSignal] Démarrage de l\'initialisation du service de notification web...');
   if (_isOneSignalInitialized) {
+    debugPrint('[OneSignal] Déjà initialisé, on quitte.');
     return;
   }
-  // On pose le verrou immédiatement pour empêcher toute autre tentative, qu'elle réussisse ou échoue.
   _isOneSignalInitialized = true;
 
   if (!_isAllowedHostname()) {
-    print('Initialisation de OneSignal ignorée pour le domaine : ${window.location.hostname}');
+    debugPrint('[OneSignal] Domaine non autorisé : [window.location.hostname]');
     return;
   }
 
   try {
     await _waitForOneSignal();
+    debugPrint('[OneSignal] SDK détecté, vérification des Service Workers...');
+    if (window.navigator.serviceWorker != null) {
+      final registrations = await window.navigator.serviceWorker!.getRegistrations();
+      debugPrint('[OneSignal] Nombre de Service Workers trouvés : [registrations.length]');
+      for (final reg in registrations) {
+        debugPrint('[OneSignal] Désenregistrement du Service Worker : [reg.scope]');
+        await reg.unregister();
+      }
+      debugPrint('[OneSignal] Tous les anciens Service Workers ont été désenregistrés.');
+    } else {
+      debugPrint('[OneSignal] Aucun support Service Worker détecté dans ce navigateur.');
+    }
+    debugPrint('[OneSignal] Initialisation OneSignal...');
     _OneSignal.push(allowInterop((_) {
       _OneSignal.init(_InitOptions(
         appId: OneSignalConfig.appId,
@@ -91,42 +105,60 @@ Future<void> initNotificationService() async {
         serviceWorkerUpdaterPath: 'OneSignalSDKUpdaterWorker.js',
       ));
     }));
-    print('✅ OneSignal Web initialisé avec succès');
+    debugPrint('✅ OneSignal Web initialisé avec succès');
   } catch (e) {
-    // Si l'initialisation échoue (ex: mauvais domaine), on l'affiche en console mais on ne bloque pas l'app.
+    debugPrint('❌ [OneSignal] ERREUR lors de l\'initialisation : $e');
     print('ERREUR : L\'initialisation de OneSignal a échoué. Veuillez vérifier la configuration de votre domaine sur le tableau de bord OneSignal. Erreur: $e');
   }
 }
 
 Future<void> promptForPushNotificationsFromService() async {
+  debugPrint('[OneSignal] Demande explicite de permission de notification...');
   if (!_isAllowedHostname()) {
+    debugPrint('[OneSignal] Domaine non autorisé pour la demande de permission.');
     return;
   }
   await _waitForOneSignal();
+  debugPrint('[OneSignal] Appel à OneSignal.Notifications.requestPermission()');
   await _OneSignal.Notifications.requestPermission();
 }
 
 Future<String?> getPlayerIdFromService() async {
+  debugPrint('[OneSignal] Démarrage de la récupération du Player ID...');
   if (!_isAllowedHostname()) {
+    debugPrint('[OneSignal] Domaine non autorisé pour Player ID.');
     return null;
   }
   await _waitForOneSignal();
 
-  // Attendre jusqu'à 5 secondes que le Player ID soit généré
-  for (int i = 0; i < 25; i++) {
+  // Vérification de la permission de notification
+  final permission = window.Notification?.permission;
+  debugPrint('[OneSignal] Permission de notification actuelle : $permission');
+  if (permission == null) {
+    debugPrint('[OneSignal] Notification API non supportée.');
+  } else if (permission == 'denied') {
+    debugPrint('[OneSignal] Permission refusée par l\'utilisateur.');
+  } else if (permission == 'default') {
+    debugPrint('[OneSignal] Permission pas encore demandée ou ignorée.');
+  } else if (permission == 'granted') {
+    debugPrint('[OneSignal] Permission accordée.');
+  }
+
+  // Attendre jusqu'à 20 secondes que le Player ID soit généré
+  for (int i = 0; i < 100; i++) {
     final pushSub = _OneSignal.User.pushSubscription;
     final id = pushSub?.id;
+    debugPrint('[OneSignal] Tentative $i : Player ID = $id');
     if (id != null && id.isNotEmpty) {
-      print('✅ DEBUG: Player ID OneSignal trouvé = $id');
+      debugPrint('✅ DEBUG: Player ID OneSignal trouvé = $id');
       return id;
     }
-    // On logue seulement les premières tentatives pour ne pas polluer la console
-    if (i < 5) {
-      print('⏳ DEBUG: Attente du Player ID... (essai ${i + 1})');
+    if (i < 20) {
+      debugPrint('⏳ DEBUG: Attente du Player ID... (essai ${i + 1})');
     }
     await Future.delayed(const Duration(milliseconds: 200));
   }
-  print('❌ DEBUG: Player ID OneSignal toujours null après 5 secondes.');
+  debugPrint('❌ DEBUG: Player ID OneSignal toujours null après 20 secondes.');
   return null;
 }
 
