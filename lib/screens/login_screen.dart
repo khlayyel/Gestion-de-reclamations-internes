@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../services/user_service.dart';
 import 'admin_dashboard.dart';
 import 'staff_dashboard.dart';
+import '../services/notification_service_web.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -62,7 +63,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           if (userId != null) {
             await NotificationService.setExternalUserId(userId);
           }
-          String? playerId = await NotificationService.getPlayerId();
+          // Attendre que le Player ID soit disponible (web)
+          String? playerId;
+          try {
+            playerId = await waitForPlayerId();
+          } catch (_) {
+            playerId = await NotificationService.getPlayerId();
+          }
           print('DEBUG: Player ID OneSignal récupéré = \\${playerId ?? "null"}');
           if (playerId != null && playerId.isNotEmpty && userId != null) {
             print('DEBUG: Envoi du Player ID au backend pour userId=\\$userId');
