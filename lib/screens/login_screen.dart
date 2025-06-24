@@ -62,20 +62,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           final String? userId = user['_id'];
           if (userId != null) {
             await NotificationService.setExternalUserId(userId);
-          }
-          // Attendre que le Player ID soit disponible (web)
-          String? playerId;
-          try {
-            playerId = await waitForPlayerId();
-          } catch (_) {
-            playerId = await NotificationService.getPlayerId();
-          }
-          print('DEBUG: Player ID OneSignal récupéré = \\${playerId ?? "null"}');
-          if (playerId != null && playerId.isNotEmpty && userId != null) {
-            print('DEBUG: Envoi du Player ID au backend pour userId=\\$userId');
-            await UserService.updatePlayerId(userId, playerId);
-          } else {
-            print('INFO: Player ID OneSignal non disponible immédiatement. Il sera associé lors de la prochaine session.');
+            await ApiService.syncOneSignalPlayerId(userId);
           }
         } catch (e) {
           print('AVERTISSEMENT: La configuration des notifications a échoué mais la connexion continue. Erreur: $e');

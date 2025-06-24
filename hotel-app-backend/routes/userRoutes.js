@@ -23,5 +23,8 @@ router.post('/update-player-id', userController.updatePlayerId);
 // Route pour supprimer un utilisateur par ID
 router.delete('/:id', userController.deleteUser);
 
+// Route pour synchroniser un player_id OneSignal avec un utilisateur
+router.post('/sync-onesignal-playerid', userController.syncOneSignalPlayerId);
+
 // Exportation du routeur pour l'utiliser dans server.js
 module.exports = router;

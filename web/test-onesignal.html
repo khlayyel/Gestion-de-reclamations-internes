@@ -5,35 +5,67 @@
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "6ce72582-adbc-4b70-a16b-6af977e59707", // Ton vrai App ID
-      });
+      try {
+        console.log('[DEBUG] Initialisation OneSignal...');
+        await OneSignal.init({
+          appId: "6ce72582-adbc-4b70-a16b-6af977e59707", // Ton vrai App ID
+        });
+        console.log('[DEBUG] OneSignal.init OK');
+      } catch (e) {
+        console.error('[ERREUR] OneSignal.init:', e);
+        return;
+      }
 
-      // Demande la permission explicitement
-      const permission = await OneSignal.Notifications.requestPermission();
-      console.log('Permission notifications:', permission);
+      try {
+        const permission = await OneSignal.Notifications.requestPermission();
+        console.log('[DEBUG] Permission notifications:', permission);
+      } catch (e) {
+        console.error('[ERREUR] Permission notifications:', e);
+        return;
+      }
 
-      // Force le login (externalId arbitraire pour le test)
-      await OneSignal.login("test-external-id");
+      try {
+        const extId = 'test-external-id-' + Date.now();
+        await OneSignal.login(extId);
+        console.log('[DEBUG] OneSignal.login OK avec externalId =', extId);
+      } catch (e) {
+        console.error('[ERREUR] OneSignal.login:', e);
+        return;
+      }
 
-      // Attendre que le Player ID soit disponible
-      let tries = 0;
-      let playerId = null;
-      while (tries < 20) {
+      // Fonction pour afficher le Player ID
+      function logPlayerId(context) {
         try {
-          playerId = OneSignal.User.pushSubscription && OneSignal.User.pushSubscription.id;
+          const playerId = OneSignal.User.pushSubscription && OneSignal.User.pushSubscription.id;
+          console.log(`[${context}] TEST HTML - Player ID:`, playerId);
+          return playerId;
         } catch (e) {
-          playerId = null;
+          console.error(`[${context}] ERREUR accès Player ID:`, e);
+          return null;
         }
-        if (playerId) break;
+      }
+
+      // 1. Essaye immédiatement
+      logPlayerId('immediate');
+
+      // 2. Boucle d'attente (jusqu'à 60s)
+      let tries = 0;
+      while (tries < 120) {
+        const playerId = logPlayerId('boucle');
+        if (playerId) {
+          console.log('[DEBUG] Player ID trouvé dans la boucle:', playerId);
+          break;
+        }
         await new Promise(r => setTimeout(r, 500));
         tries++;
       }
-      console.log('TEST HTML - Player ID:', playerId);
+      if (tries >= 120) {
+        console.warn('[DEBUG] Player ID non trouvé après 60s');
+      }
     });
   </script>
 </head>
 <body>
-  <h1>Test OneSignal</h1>
+  <h1>Test OneSignal (Debug)</h1>
 </body>
 </html>

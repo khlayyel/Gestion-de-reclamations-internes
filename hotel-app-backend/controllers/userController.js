@@ -2,6 +2,7 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const { sendUserCredentialsEmail } = require('../utils/emailService');
 const { sendNotification } = require('../utils/notificationService');
+const fetch = require('node-fetch');
 
 // Créer un nouvel utilisateur
 exports.createUser = async (req, res) => {
@@ -177,5 +178,41 @@ exports.deleteUser = async (req, res) => {
     res.status(200).json({ message: 'Utilisateur supprimé' });
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la suppression', error });
+  }
+};
+
+exports.syncOneSignalPlayerId = async (req, res) => {
+  const { externalId } = req.body;
+  if (!externalId) return res.status(400).json({ message: 'externalId requis' });
+
+  const APP_ID = process.env.ONESIGNAL_APP_ID || '6ce72582-adbc-4b70-a16b-6af977e59707';
+  const API_KEY = process.env.ONESIGNAL_REST_API_KEY;
+
+  const url = `https://api.onesignal.com/apps/${APP_ID}/users/by/external_id/${externalId}`;
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Key ${API_KEY}`,
+        'accept': 'application/json'
+      }
+    });
+    const data = await response.json();
+    if (!data.subscriptions || !data.subscriptions.length) {
+      return res.status(404).json({ message: 'Aucune subscription trouvée pour ce user.' });
+    }
+    const playerId = data.subscriptions[0].id;
+
+    // Met à jour le user dans MongoDB
+    const user = await User.findByIdAndUpdate(
+      externalId,
+      { $addToSet: { playerIds: playerId } },
+      { new: true }
+    );
+    if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+
+    res.json({ playerId });
+  } catch (e) {
+    res.status(500).json({ message: 'Erreur lors de la synchronisation du Player ID', error: e.message });
   }
 };

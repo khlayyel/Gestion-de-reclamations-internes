@@ -134,34 +134,6 @@ Future<void> subscribeUserToPushFromService() async {
   }
 }
 
-Future<String?> getPlayerIdFromService() async {
-  print('[OneSignal] Démarrage de la récupération du Player ID...');
-  if (!_isAllowedHostname()) {
-    print('[OneSignal] Domaine non autorisé pour Player ID.');
-    return null;
-  }
-  await _waitForOneSignal();
-
-  // Vérification de la permission de notification
-  final permission = Notification.permission;
-  print('[OneSignal] Permission de notification actuelle : $permission');
-  if (permission == null) {
-    print('[OneSignal] Notification API non supportée.');
-  } else if (permission == 'denied') {
-    print('[OneSignal] Permission refusée par l\'utilisateur.');
-  } else if (permission == 'default') {
-    print('[OneSignal] Permission pas encore demandée ou ignorée.');
-  } else if (permission == 'granted') {
-    print('[OneSignal] Permission accordée.');
-  }
-
-  // Nouvelle logique : on tente UNE SEULE FOIS de récupérer le Player ID
-  final pushSub = _OneSignal.User.pushSubscription;
-  final id = pushSub?.id;
-  print('[OneSignal] Player ID OneSignal récupéré = $id');
-  return (id != null && id.isNotEmpty) ? id : null;
-}
-
 Future<void> _waitForOneSignal() async {
   for (int i = 0; i < 15; i++) {
     if (_isOneSignalDefined()) {
@@ -198,15 +170,4 @@ Future<void> setExternalUserIdFromService(String externalId) async {
   } catch (e) {
     print('[OneSignal] Erreur lors de la vérification post-login : $e');
   }
-}
-
-Future<String?> waitForPlayerId({int maxTries = 20, Duration delay = const Duration(milliseconds: 500)}) async {
-  for (int i = 0; i < maxTries; i++) {
-    final id = await getPlayerIdFromService();
-    if (id != null && id.isNotEmpty) {
-      return id;
-    }
-    await Future.delayed(delay);
-  }
-  return null;
 }

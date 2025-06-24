@@ -1,38 +1,71 @@
-const puppeteer = require('puppeteer');
-
-const SITE_URL = 'https://reclamations-internes.vercel.app';
-
-(async () => {
-  const browser = await puppeteer.launch({ headless: false });
-  const page = await browser.newPage();
-
-  // Autoriser les notifications
-  const context = browser.defaultBrowserContext();
-  await context.overridePermissions(SITE_URL, ['notifications']);
-
-  await page.goto(SITE_URL, { waitUntil: 'networkidle2' });
-  await new Promise(r => setTimeout(r, 2000));
-
-  console.log('Veuillez saisir manuellement le nom d\'utilisateur et le mot de passe, puis CLIQUEZ VOUS-MÊME sur "Se connecter". Le script va attendre 40 secondes pour récupérer le Player ID...');
-  await new Promise(r => setTimeout(r, 40000));
-
-  // Récupère le Player ID OneSignal
-  let playerId = null;
-  for (let i = 0; i < 60; i++) {
-    playerId = await page.evaluate(() => {
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
       try {
-        return window.OneSignal?.User?.pushSubscription?.id || null;
-      } catch (e) { return null; }
+        console.log('[DEBUG] Initialisation OneSignal...');
+        await OneSignal.init({
+          appId: "6ce72582-adbc-4b70-a16b-6af977e59707", // Ton vrai App ID
+        });
+        console.log('[DEBUG] OneSignal.init OK');
+      } catch (e) {
+        console.error('[ERREUR] OneSignal.init:', e);
+        return;
+      }
+
+      try {
+        const permission = await OneSignal.Notifications.requestPermission();
+        console.log('[DEBUG] Permission notifications:', permission);
+      } catch (e) {
+        console.error('[ERREUR] Permission notifications:', e);
+        return;
+      }
+
+      try {
+        const extId = 'test-external-id-hobbi' + Date.now();
+        await OneSignal.login(extId);
+        console.log('[DEBUG] OneSignal.login OK avec externalId =', extId);
+      } catch (e) {
+        console.error('[ERREUR] OneSignal.login:', e);
+        return;
+      }
+
+      // Fonction pour afficher le Player ID
+      function logPlayerId(context) {
+        try {
+          const playerId = OneSignal.User.pushSubscription && OneSignal.User.pushSubscription.id;
+          console.log(`[${context}] TEST HTML - Player ID:`, playerId);
+          return playerId;
+        } catch (e) {
+          console.error(`[${context}] ERREUR accès Player ID:`, e);
+          return null;
+        }
+      }
+
+      // 1. Essaye immédiatement
+      logPlayerId('immediate');
+
+      // 2. Boucle d'attente (jusqu'à 60s)
+      let tries = 0;
+      while (tries < 120) {
+        const playerId = logPlayerId('boucle');
+        if (playerId) {
+          console.log('[DEBUG] Player ID trouvé dans la boucle:', playerId);
+          break;
+        }
+        await new Promise(r => setTimeout(r, 500));
+        tries++;
+      }
+      if (tries >= 120) {
+        console.warn('[DEBUG] Player ID non trouvé après 60s');
+      }
     });
-    if (playerId) break;
-    await new Promise(r => setTimeout(r, 500));
-  }
-
-  if (playerId) {
-    console.log('✅ Player ID OneSignal trouvé :', playerId);
-  } else {
-    console.log('❌ Player ID OneSignal non trouvé');
-  }
-
-  await browser.close();
-})(); 
+  </script>
+</head>
+<body>
+  <h1>Test OneSignal (Debug)</h1>
+</body>
+</html>

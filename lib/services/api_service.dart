@@ -95,4 +95,23 @@ class ApiService {
     // On efface TOUTES les données stockées pour garantir une session propre.
     await prefs.clear();
   }
+
+  // Nouvelle méthode pour synchroniser le Player ID via le backend
+  static Future<void> syncOneSignalPlayerId(String userId) async {
+    final url = Uri.parse('$baseUrl/api/users/sync-onesignal-playerid');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'externalId': userId}),
+      );
+      if (response.statusCode == 200) {
+        print('Player ID synchronisé via backend.');
+      } else {
+        print('Erreur lors de la synchronisation du Player ID: \\${response.body}');
+      }
+    } catch (e) {
+      print('Erreur lors de la synchronisation du Player ID: $e');
+    }
+  }
 }
