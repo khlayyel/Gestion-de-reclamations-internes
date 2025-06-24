@@ -98,7 +98,7 @@ class ApiService {
 
   // Nouvelle méthode pour synchroniser le Player ID via le backend
   static Future<void> syncOneSignalPlayerId(String userId) async {
-    final url = Uri.parse('$baseUrl/api/users/sync-onesignal-playerid');
+    final url = Uri.parse('$baseUrl/users/sync-onesignal-playerid');
     try {
       final response = await http.post(
         url,
