@@ -146,32 +146,6 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-// Nouvelle fonction pour mettre à jour le playerId
-exports.updatePlayerId = async (req, res) => {
-  const { userId, playerId } = req.body;
-
-  if (!userId || !playerId) {
-    return res.status(400).json({ message: 'userId et playerId sont requis.' });
-  }
-
-  try {
-    // Ajoute le nouveau playerId au tableau s'il n'y est pas déjà
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { $addToSet: { playerIds: playerId } }, // $addToSet évite les doublons
-      { new: true }
-    );
-
-    if (!user) {
-      return res.status(404).json({ message: 'Utilisateur non trouvé.' });
-    }
-
-    res.status(200).json({ message: 'Player ID mis à jour avec succès.' });
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la mise à jour du Player ID.', error: error.message });
-  }
-};
-
 exports.deleteUser = async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);

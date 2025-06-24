@@ -83,23 +83,6 @@ class UserService {
     }
   }
 
-  // Met à jour le player ID pour un utilisateur donné
-  static Future<void> updatePlayerId(String userId, String playerId) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/api/users/update-player-id'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'userId': userId, 'playerId': playerId}),
-    );
-
-    if (response.statusCode != 200) {
-      // Affiche une alerte visible si la mise à jour échoue
-      debugPrint('Erreur lors de la mise à jour du player ID: [31m${response.body}[0m');
-      // Optionnel : tu peux aussi afficher un SnackBar si tu passes un BuildContext
-    } else {
-      debugPrint('Player ID mis à jour avec succès pour l\'utilisateur $userId');
-    }
-  }
-
   // Vérifier si un email existe déjà dans la base
   static Future<bool> checkEmailExists(String email) async {
     final response = await http.get(Uri.parse('$baseUrl/api/users/get'));
