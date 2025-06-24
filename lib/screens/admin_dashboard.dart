@@ -89,14 +89,27 @@ class _AdminDashboardState extends State<AdminDashboard> with SingleTickerProvid
             icon: Icon(Icons.logout),
             tooltip: 'Déconnexion',
             onPressed: () async {
-              await NotificationService.unsubscribeFromPush();
-              await NotificationService.logoutOneSignal();
-              await ApiService.logout();
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => LoginScreen()),
-                (route) => false,
-              );
+              try {
+                await NotificationService.unsubscribeFromPush();
+                await NotificationService.logoutOneSignal();
+                await ApiService.logout();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => LoginScreen()),
+                  (route) => false,
+                );
+              } catch (e, stack) {
+                print('Erreur lors de la déconnexion : $e');
+                print(stack);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Erreur lors de la déconnexion.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
           ),
         ],
