@@ -11,12 +11,6 @@ class NotificationService {
     return initNotificationService();
   }
 
-  /// Récupère le Player ID de l'utilisateur.
-  /// Retourne null si l'utilisateur n'est pas abonné.
-  static Future<String?> getPlayerId() {
-    return getPlayerIdFromService();
-  }
-
   /// Affiche une demande de permission pour les notifications.
   /// - Sur le web, cela affiche le "slidedown prompt" de OneSignal.
   /// - Sur mobile, cela déclenche la demande de permission native.
