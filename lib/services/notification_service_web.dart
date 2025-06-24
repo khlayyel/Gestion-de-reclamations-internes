@@ -190,3 +190,13 @@ Future<void> waitForPlayerIdReady({int maxTries = 20}) async {
 }
 
 Future<void> waitForPlayerIdReadyFromService() => waitForPlayerIdReady();
+
+@JS('OneSignal.logout')
+external Future<void> oneSignalLogoutJs();
+
+Future<void> logoutFromService() async {
+  if (!_isAllowedHostname()) return;
+  await _waitForOneSignal();
+  await oneSignalLogoutJs();
+  print('[OneSignal] OneSignal.logout appelé (web)');
+}

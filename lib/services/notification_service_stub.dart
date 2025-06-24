@@ -23,4 +23,8 @@ Future<void> setExternalUserIdFromService(String externalId) async {
 
 Future<void> waitForPlayerIdReadyFromService() async {
   // Ne fait rien (no-op)
+}
+
+Future<void> logoutFromService() async {
+  // Ne fait rien (no-op)
 } 

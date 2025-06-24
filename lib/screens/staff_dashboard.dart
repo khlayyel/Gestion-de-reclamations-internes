@@ -10,6 +10,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:hotel_staff_app/screens/login_screen.dart';
 import '../services/user_service.dart';
 import '../services/pwa_service.dart';
+import '../services/notification_service.dart';
 
 class StaffDashboard extends StatefulWidget {
   @override
@@ -615,6 +616,7 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
             icon: Icon(Icons.logout),
             tooltip: 'Déconnexion',
             onPressed: () async {
+              await NotificationService.logoutOneSignal();
               await ApiService.logout();
               Navigator.pushAndRemoveUntil(
                 context,

@@ -33,4 +33,9 @@ class NotificationService {
   static Future<void> waitForPlayerIdReady() {
     return waitForPlayerIdReadyFromService();
   }
+
+  /// Déconnecte le Player ID OneSignal (désabonne du push)
+  static Future<void> logoutOneSignal() {
+    return logoutFromService();
+  }
 } 

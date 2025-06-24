@@ -5,6 +5,7 @@ import 'admin_stats_dashboard.dart';
 import '../services/api_service.dart';
 import '../screens/login_screen.dart';
 import '../services/pwa_service.dart';
+import '../services/notification_service.dart';
 
 class AdminDashboard extends StatefulWidget {
   @override
@@ -88,6 +89,7 @@ class _AdminDashboardState extends State<AdminDashboard> with SingleTickerProvid
             icon: Icon(Icons.logout),
             tooltip: 'Déconnexion',
             onPressed: () async {
+              await NotificationService.logoutOneSignal();
               await ApiService.logout();
               Navigator.pushAndRemoveUntil(
                 context,

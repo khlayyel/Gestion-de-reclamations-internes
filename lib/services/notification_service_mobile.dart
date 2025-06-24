@@ -35,3 +35,8 @@ Future<void> setExternalUserIdFromService(String externalId) async {
 Future<void> waitForPlayerIdReadyFromService() async {
   // Ne fait rien (no-op)
 }
+
+Future<void> logoutFromService() async {
+  await OneSignal.logout();
+  print('[OneSignal] OneSignal.logout appelé (mobile)');
+}
