@@ -183,20 +183,19 @@ bool _isOneSignalDefined() {
   }
 }
 
-@JS('OneSignal.setExternalUserId')
-external void setExternalUserIdJs(String externalId);
+@JS('OneSignal.login')
+external void oneSignalLoginJs(String externalId);
 
 Future<void> setExternalUserIdFromService(String externalId) async {
   if (!_isAllowedHostname()) return;
   await _waitForOneSignal();
-  setExternalUserIdJs(externalId);
-  print('[OneSignal] setExternalUserId appelé avec : ' + externalId);
-  // Vérification côté JS (log le external_id après set)
-  await Future.delayed(const Duration(seconds: 1));
+  oneSignalLoginJs(externalId);
+  print('[OneSignal] OneSignal.login appelé avec : ' + externalId);
+  await Future.delayed(const Duration(seconds: 2));
   try {
     final id = _OneSignal.User.pushSubscription?.id;
-    print('[OneSignal] Vérification post-setExternalUserId : Player ID = ' + (id ?? 'null'));
+    print('[OneSignal] Vérification post-login : Player ID = ' + (id ?? 'null'));
   } catch (e) {
-    print('[OneSignal] Erreur lors de la vérification post-setExternalUserId : $e');
+    print('[OneSignal] Erreur lors de la vérification post-login : $e');
   }
-} 
+}
