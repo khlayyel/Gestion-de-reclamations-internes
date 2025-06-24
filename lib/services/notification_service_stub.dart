@@ -27,4 +27,8 @@ Future<void> waitForPlayerIdReadyFromService() async {
 
 Future<void> logoutFromService() async {
   // Ne fait rien (no-op)
+}
+
+Future<void> unsubscribeFromPushService() async {
+  // Ne fait rien (no-op)
 } 

@@ -133,11 +133,15 @@ exports.updateUser = async (req, res) => {
       adminName: modifiePar
     });
 
-    // Envoyer une notification push à l'utilisateur modifié
+    // Envoyer une notification push à l'utilisateur modifié (sauf si c'est lui-même qui se modifie)
     if (updatedUser.playerIds && updatedUser.playerIds.length > 0) {
-      const heading = "Votre compte a été mis à jour";
-      const content = "Vos informations ont été modifiées par un administrateur. Consultez vos e-mails pour plus de détails.";
-      await sendNotification(updatedUser.playerIds, heading, content);
+      // On suppose que l'ID de l'admin modificateur est dans req.session.userId ou req.body.modifiePar
+      // Si ce n'est pas le même user, on notifie
+      if (!req.session || updatedUser._id.toString() !== req.session.userId) {
+        const heading = "Votre compte a été modifié";
+        const content = "Un administrateur a modifié votre compte. Consultez vos emails ou l'application pour plus de détails.";
+        await sendNotification(updatedUser.playerIds, heading, content);
+      }
     }
 
     res.status(200).json({ message: 'Utilisateur modifié avec succès', user: updatedUser });

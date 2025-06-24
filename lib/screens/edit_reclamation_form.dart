@@ -23,6 +23,7 @@ class _EditReclamationFormState extends State<EditReclamationForm> {
   late String _status;
   late String _location;
   late String _createdBy;
+  bool _isLoading = false;
 
   // Liste des départements pour CheckboxListTile
   final List<String> _availableDepartments = [
@@ -89,6 +90,7 @@ class _EditReclamationFormState extends State<EditReclamationForm> {
         return;
       }
 
+      setState(() => _isLoading = true);
       final updatedReclamation = Reclamation(
         id: widget.reclamation.id,
         objet: _objet,
@@ -105,10 +107,34 @@ class _EditReclamationFormState extends State<EditReclamationForm> {
 
       try {
         await ReclamationService.updateReclamation(updatedReclamation, context);
+        setState(() => _isLoading = false);
         if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('La réclamation a été modifiée avec succès'),
+                ],
+              ),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 3),
+              behavior: SnackBarBehavior.floating,
+              margin: EdgeInsets.only(
+                bottom: MediaQuery.of(context).size.height - 100,
+                left: 10,
+                right: 10,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
           Navigator.pop(context, true);
         }
       } catch (e) {
+        setState(() => _isLoading = false);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -366,8 +392,17 @@ class _EditReclamationFormState extends State<EditReclamationForm> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          onPressed: _submitForm,
-                          icon: Icon(Icons.save),
+                          onPressed: _isLoading ? null : _submitForm,
+                          icon: _isLoading
+                              ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : Icon(Icons.save),
                           label: Text('Enregistrer les modifications'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,

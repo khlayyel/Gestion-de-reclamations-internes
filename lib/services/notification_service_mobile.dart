@@ -40,3 +40,8 @@ Future<void> logoutFromService() async {
   await OneSignal.logout();
   print('[OneSignal] OneSignal.logout appelé (mobile)');
 }
+
+Future<void> unsubscribeFromPushService() async {
+  await OneSignal.User.pushSubscription.optOut();
+  print('[OneSignal] Désabonnement push appelé (mobile)');
+}

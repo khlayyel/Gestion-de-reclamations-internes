@@ -616,6 +616,7 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
             icon: Icon(Icons.logout),
             tooltip: 'Déconnexion',
             onPressed: () async {
+              await NotificationService.unsubscribeFromPush();
               await NotificationService.logoutOneSignal();
               await ApiService.logout();
               Navigator.pushAndRemoveUntil(

@@ -38,4 +38,9 @@ class NotificationService {
   static Future<void> logoutOneSignal() {
     return logoutFromService();
   }
+
+  /// Désabonne le Player ID OneSignal du push (unsubscribe)
+  static Future<void> unsubscribeFromPush() {
+    return unsubscribeFromPushService();
+  }
 } 

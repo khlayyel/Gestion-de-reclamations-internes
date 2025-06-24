@@ -27,6 +27,7 @@ class _ReclamationFormState extends State<ReclamationForm> {
   String _location = '';
   String _createdBy = '';
   int? _priority;  // Changé en nullable pour indiquer qu'aucune priorité n'est sélectionnée
+  bool _isLoading = false;
 
   // Liste des départements pour CheckboxListTile
   final List<String> _availableDepartments = [
@@ -236,26 +237,49 @@ class _ReclamationFormState extends State<ReclamationForm> {
 
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
-
+      setState(() => _isLoading = true);
       final reclamationData = {
         'objet': _objet,
         'description': _description,
         'createdBy': _createdBy,
         'departments': _departments,
-        'priority': _priority,  // Utilisation de la priorité sélectionnée
+        'priority': _priority,
         'status': 'New',
         'location': _location,
       };
-
       try {
         final response = await http.post(
           Uri.parse('$baseUrl/api/reclamations/create'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode(reclamationData),
         );
-
+        setState(() => _isLoading = false);
         if (response.statusCode == 201) {
-          Navigator.pop(context, true);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text('La réclamation a été créée avec succès'),
+                  ],
+                ),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 3),
+                behavior: SnackBarBehavior.floating,
+                margin: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).size.height - 100,
+                  left: 10,
+                  right: 10,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            );
+            Navigator.pop(context, true);
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -281,6 +305,7 @@ class _ReclamationFormState extends State<ReclamationForm> {
           );
         }
       } catch (e) {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -640,8 +665,17 @@ class _ReclamationFormState extends State<ReclamationForm> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          onPressed: _submitForm,
-                          icon: Icon(Icons.add_circle),
+                          onPressed: _isLoading ? null : _submitForm,
+                          icon: _isLoading
+                              ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : Icon(Icons.add_circle),
                           label: Text('Créer la réclamation'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,

@@ -194,9 +194,19 @@ Future<void> waitForPlayerIdReadyFromService() => waitForPlayerIdReady();
 @JS('OneSignal.logout')
 external Future<void> oneSignalLogoutJs();
 
+@JS('OneSignal.User.pushSubscription.optOut')
+external Future<void> oneSignalOptOutJs();
+
 Future<void> logoutFromService() async {
   if (!_isAllowedHostname()) return;
   await _waitForOneSignal();
   await oneSignalLogoutJs();
   print('[OneSignal] OneSignal.logout appelé (web)');
+}
+
+Future<void> unsubscribeFromPushService() async {
+  if (!_isAllowedHostname()) return;
+  await _waitForOneSignal();
+  await oneSignalOptOutJs();
+  print('[OneSignal] Désabonnement push appelé (web)');
 }
