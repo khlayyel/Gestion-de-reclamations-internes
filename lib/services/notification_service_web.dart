@@ -207,6 +207,16 @@ Future<void> logoutFromService() async {
 Future<void> unsubscribeFromPushService() async {
   if (!_isAllowedHostname()) return;
   await _waitForOneSignal();
-  await oneSignalOptOutJs();
-  print('[OneSignal] Désabonnement push appelé (web)');
+  try {
+    // Vérifie que la fonction optOut existe avant de l'appeler
+    final hasOptOut = _eval('typeof OneSignal !== "undefined" && OneSignal.User && OneSignal.User.pushSubscription && typeof OneSignal.User.pushSubscription.optOut === "function"');
+    if (hasOptOut) {
+      await oneSignalOptOutJs();
+      print('[OneSignal] Désabonnement push appelé (web)');
+    } else {
+      print('[OneSignal] optOut n\'est pas disponible sur pushSubscription');
+    }
+  } catch (e) {
+    print('[OneSignal] Erreur lors du désabonnement push : $e');
+  }
 }
