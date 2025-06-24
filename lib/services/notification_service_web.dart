@@ -155,22 +155,11 @@ Future<String?> getPlayerIdFromService() async {
     print('[OneSignal] Permission accordée.');
   }
 
-  // Attendre jusqu'à 10 secondes que le Player ID soit généré
-  for (int i = 0; i < 20; i++) {
-    final pushSub = _OneSignal.User.pushSubscription;
-    final id = pushSub?.id;
-    print('[OneSignal] Tentative $i : Player ID = $id');
-    if (id != null && id.isNotEmpty) {
-      print('✅ DEBUG: Player ID OneSignal trouvé = $id');
-      return id;
-    }
-    if (i < 10) {
-      print('⏳ DEBUG: Attente du Player ID... (essai ${i + 1})');
-    }
-    await Future.delayed(const Duration(milliseconds: 500));
-  }
-  print('❌ DEBUG: Player ID OneSignal toujours null après 10 secondes.');
-  return null;
+  // Nouvelle logique : on tente UNE SEULE FOIS de récupérer le Player ID
+  final pushSub = _OneSignal.User.pushSubscription;
+  final id = pushSub?.id;
+  print('[OneSignal] Player ID OneSignal récupéré = $id');
+  return (id != null && id.isNotEmpty) ? id : null;
 }
 
 Future<void> _waitForOneSignal() async {
@@ -202,4 +191,12 @@ Future<void> setExternalUserIdFromService(String externalId) async {
   await _waitForOneSignal();
   setExternalUserIdJs(externalId);
   print('[OneSignal] setExternalUserId appelé avec : ' + externalId);
+  // Vérification côté JS (log le external_id après set)
+  await Future.delayed(const Duration(seconds: 1));
+  try {
+    final id = _OneSignal.User.pushSubscription?.id;
+    print('[OneSignal] Vérification post-setExternalUserId : Player ID = ' + (id ?? 'null'));
+  } catch (e) {
+    print('[OneSignal] Erreur lors de la vérification post-setExternalUserId : $e');
+  }
 } 
