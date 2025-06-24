@@ -58,7 +58,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         try {
           await NotificationService.promptForPushNotifications();
           await NotificationService.subscribeUserToPush();
-          final String? userId = user['_id'] ?? user['id'];
+          final String? userId = user['_id'];
+          if (userId != null) {
+            await NotificationService.setExternalUserId(userId);
+          }
           String? playerId;
           for (int i = 0; i < 20; i++) { // 20 x 500ms = 10 secondes max
             playerId = await NotificationService.getPlayerId();

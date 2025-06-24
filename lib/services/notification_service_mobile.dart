@@ -27,3 +27,7 @@ Future<void> subscribeUserToPushFromService() async {
     print('❌ [OneSignal Mobile] Erreur lors du forçage de l\'abonnement push : $e');
   }
 }
+
+Future<void> setExternalUserIdFromService(String externalId) async {
+  await OneSignal.User.setExternalUserId(externalId);
+}

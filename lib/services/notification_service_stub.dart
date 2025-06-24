@@ -15,4 +15,8 @@ Future<void> promptForPushNotificationsFromService() async {
 
 Future<void> subscribeUserToPushFromService() async {
   // Stub : ne fait rien
+}
+
+Future<void> setExternalUserIdFromService(String externalId) async {
+  // Stub : ne fait rien
 } 

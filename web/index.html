@@ -33,11 +33,25 @@
   <link rel="manifest" href="manifest.json">
   <script src="flutter.js" defer></script>
   
-  <!-- OneSignal SDK -->
+  <!-- OneSignal SDK (utiliser .page.js, pas .sw.js) -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 </head>
 <body>
   <script>
+    // Empêche Flutter d’enregistrer son service worker
+    if ('serviceWorker' in navigator) {
+      const originalRegister = navigator.serviceWorker.register;
+      navigator.serviceWorker.register = function(scriptURL, options) {
+        if (scriptURL && String(scriptURL).includes('flutter_service_worker.js')) {
+          // On ignore l’enregistrement du SW Flutter
+          return new Promise(() => {});
+        }
+        return originalRegister.call(navigator.serviceWorker, scriptURL, options);
+      };
+    }
+  </script>
+  <script>
+    // Enregistre le service worker OneSignal si pas déjà fait
     if ('serviceWorker' in navigator && !navigator.serviceWorker.controller) {
       navigator.serviceWorker.register('/OneSignalSDKWorker.js');
     }

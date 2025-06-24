@@ -192,4 +192,14 @@ bool _isOneSignalDefined() {
   } catch (e) {
     return false;
   }
+}
+
+@JS('OneSignal.setExternalUserId')
+external void setExternalUserIdJs(String externalId);
+
+Future<void> setExternalUserIdFromService(String externalId) async {
+  if (!_isAllowedHostname()) return;
+  await _waitForOneSignal();
+  setExternalUserIdJs(externalId);
+  print('[OneSignal] setExternalUserId appelé avec : ' + externalId);
 } 

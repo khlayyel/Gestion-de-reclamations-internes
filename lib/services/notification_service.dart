@@ -29,4 +29,9 @@ class NotificationService {
   static Future<void> subscribeUserToPush() {
     return subscribeUserToPushFromService();
   }
+
+  /// Lie l'utilisateur courant à OneSignal (external_id)
+  static Future<void> setExternalUserId(String externalId) async {
+    return setExternalUserIdFromService(externalId);
+  }
 } 
