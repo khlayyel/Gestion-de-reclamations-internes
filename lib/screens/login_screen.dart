@@ -59,7 +59,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         try {
           await NotificationService.promptForPushNotifications();
           await NotificationService.subscribeUserToPush();
-          final String? userId = user['_id'];
+          await NotificationService.waitForPlayerIdReady();
+          // Toujours utiliser l'ID MongoDB comme external_id pour OneSignal !
+          final String? userId = user['_id'] ?? user['id'];
           if (userId != null) {
             await NotificationService.setExternalUserId(userId);
             await ApiService.syncOneSignalPlayerId(userId);

@@ -28,4 +28,9 @@ class NotificationService {
   static Future<void> setExternalUserId(String externalId) async {
     return setExternalUserIdFromService(externalId);
   }
+
+  /// Attend que le Player ID soit prêt (web uniquement, no-op sur mobile)
+  static Future<void> waitForPlayerIdReady() {
+    return waitForPlayerIdReadyFromService();
+  }
 } 

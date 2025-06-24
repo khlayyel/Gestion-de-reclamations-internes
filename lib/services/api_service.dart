@@ -114,4 +114,35 @@ class ApiService {
       print('Erreur lors de la synchronisation du Player ID: $e');
     }
   }
+
+  // Méthode pour récupérer et afficher tous les Player IDs liés à un external_id (ID MongoDB) via l'API REST OneSignal
+  static Future<void> fetchAndPrintPlayerIdsForExternalId(String externalId) async {
+    final String appId = '6ce72582-adbc-4b70-a16b-6af977e59707'; // Ton vrai App ID
+    final String apiKey = 'os_v2_app_nttslavnxrfxbillnl4xpzmxa6uy6ibijgeecbmvtf7mjwdj6xfu67aiprk3ttwanesr6tzl2totdemvhxhovptuae3i2ha2qcbgmfq'; // ⚠️ Mets ta vraie clé API REST ici pour test UNIQUEMENT
+    final url = Uri.parse('https://api.onesignal.com/apps/$appId/users/by/external_id/$externalId');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Key $apiKey',
+          'accept': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final subs = data['subscriptions'] as List<dynamic>?;
+        if (subs != null && subs.isNotEmpty) {
+          final playerIds = subs.map((s) => s['id']).toList();
+          print('Player IDs pour external_id $externalId: $playerIds');
+        } else {
+          print('Aucun Player ID trouvé pour cet external_id.');
+        }
+      } else {
+        print('Erreur API OneSignal: ${response.body}');
+      }
+    } catch (e) {
+      print('Erreur lors de la récupération des Player IDs: $e');
+    }
+  }
 }

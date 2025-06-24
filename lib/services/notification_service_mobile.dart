@@ -31,3 +31,7 @@ Future<void> subscribeUserToPushFromService() async {
 Future<void> setExternalUserIdFromService(String externalId) async {
   await OneSignal.User.setExternalUserId(externalId);
 }
+
+Future<void> waitForPlayerIdReadyFromService() async {
+  // Ne fait rien (no-op)
+}

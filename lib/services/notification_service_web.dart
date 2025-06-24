@@ -171,3 +171,22 @@ Future<void> setExternalUserIdFromService(String externalId) async {
     print('[OneSignal] Erreur lors de la vérification post-login : $e');
   }
 }
+
+Future<String?> getPlayerIdFromService() async {
+  await _waitForOneSignal();
+  try {
+    return _OneSignal.User.pushSubscription?.id;
+  } catch (e) {
+    return null;
+  }
+}
+
+Future<void> waitForPlayerIdReady({int maxTries = 20}) async {
+  for (int i = 0; i < maxTries; i++) {
+    final id = await getPlayerIdFromService();
+    if (id != null && id.isNotEmpty) return;
+    await Future.delayed(const Duration(milliseconds: 300));
+  }
+}
+
+Future<void> waitForPlayerIdReadyFromService() => waitForPlayerIdReady();

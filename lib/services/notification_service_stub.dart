@@ -19,4 +19,8 @@ Future<void> subscribeUserToPushFromService() async {
 
 Future<void> setExternalUserIdFromService(String externalId) async {
   // Stub : ne fait rien
+}
+
+Future<void> waitForPlayerIdReadyFromService() async {
+  // Ne fait rien (no-op)
 } 
