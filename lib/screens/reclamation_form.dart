@@ -12,6 +12,11 @@ class ReclamationForm extends StatefulWidget {
 
 class _ReclamationFormState extends State<ReclamationForm> {
   final _formKey = GlobalKey<FormState>();
+  // Ajout des FocusNode pour chaque champ
+  final FocusNode _objetFocus = FocusNode();
+  final FocusNode _descriptionFocus = FocusNode();
+  final FocusNode _locationFocus = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   // Méthode pour obtenir l'URL en fonction de la plateforme
   static String get baseUrl {
     return kDebugMode 
@@ -152,7 +157,21 @@ class _ReclamationFormState extends State<ReclamationForm> {
   void dispose() {
     _objetController.dispose();
     _descriptionController.dispose();
+    _objetFocus.dispose();
+    _descriptionFocus.dispose();
+    _locationFocus.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  // Fonction utilitaire pour focus et scroll sur un champ
+  Future<void> _focusAndScroll(FocusNode node, GlobalKey key) async {
+    FocusScope.of(context).requestFocus(node);
+    await Future.delayed(Duration(milliseconds: 100));
+    final ctx = key.currentContext;
+    if (ctx != null) {
+      Scrollable.ensureVisible(ctx, duration: Duration(milliseconds: 300), curve: Curves.easeIn);
+    }
   }
 
   // Fonction pour soumettre le formulaire
@@ -232,6 +251,20 @@ class _ReclamationFormState extends State<ReclamationForm> {
           duration: Duration(seconds: 3),
         ),
       );
+      return;
+    }
+
+    // Vérification des champs vides et focus auto
+    if (_objetController.text.isEmpty) {
+      await _focusAndScroll(_objetFocus, _objetKey);
+      return;
+    }
+    if (_descriptionController.text.isEmpty) {
+      await _focusAndScroll(_descriptionFocus, _descriptionKey);
+      return;
+    }
+    if (_location.isEmpty) {
+      await _focusAndScroll(_locationFocus, _locationKey);
       return;
     }
 
@@ -332,6 +365,11 @@ class _ReclamationFormState extends State<ReclamationForm> {
     }
   }
 
+  // Ajout des GlobalKey pour chaque champ
+  final GlobalKey _objetKey = GlobalKey();
+  final GlobalKey _descriptionKey = GlobalKey();
+  final GlobalKey _locationKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     if (_createdBy.isEmpty) {
@@ -377,6 +415,7 @@ class _ReclamationFormState extends State<ReclamationForm> {
               child: Form(
                 key: _formKey,
                 child: SingleChildScrollView(
+                  controller: _scrollController,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -408,16 +447,21 @@ class _ReclamationFormState extends State<ReclamationForm> {
                               itemBuilder: (context, index) {
                                 final problem = _commonProblems[index];
                                 return InkWell(
-                                  onTap: () {
+                                  onTap: () async {
                                     setState(() {
                                       _objet = problem['objet'];
                                       _description = problem['description'];
                                       _departments = List<String>.from(problem['departments']);
                                       _priority = problem['priority'];
-                                      // Remplir les contrôleurs
                                       _objetController.text = problem['objet'];
                                       _descriptionController.text = problem['description'];
                                     });
+                                    // Focus sur le champ suivant non rempli
+                                    if (_descriptionController.text.isEmpty) {
+                                      await _focusAndScroll(_descriptionFocus, _descriptionKey);
+                                    } else if (_location.isEmpty) {
+                                      await _focusAndScroll(_locationFocus, _locationKey);
+                                    }
                                   },
                                   borderRadius: BorderRadius.circular(12),
                                   child: Container(
@@ -472,6 +516,8 @@ class _ReclamationFormState extends State<ReclamationForm> {
                               ),
                               SizedBox(height: 16),
                               TextFormField(
+                                key: _objetKey,
+                                focusNode: _objetFocus,
                                 decoration: InputDecoration(
                                   labelText: 'Objet',
                                   prefixIcon: Icon(Icons.title),
@@ -488,6 +534,8 @@ class _ReclamationFormState extends State<ReclamationForm> {
                               ),
                               SizedBox(height: 16),
                               TextFormField(
+                                key: _descriptionKey,
+                                focusNode: _descriptionFocus,
                                 decoration: InputDecoration(
                                   labelText: 'Description',
                                   prefixIcon: Icon(Icons.description),
@@ -528,6 +576,8 @@ class _ReclamationFormState extends State<ReclamationForm> {
                               ),
                               SizedBox(height: 16),
                               TextFormField(
+                                key: _locationKey,
+                                focusNode: _locationFocus,
                                 decoration: InputDecoration(
                                   labelText: 'Emplacement',
                                   prefixIcon: Icon(Icons.location_on),

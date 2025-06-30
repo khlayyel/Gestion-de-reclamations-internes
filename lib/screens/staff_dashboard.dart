@@ -61,7 +61,7 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
     );
     _channel!.stream.listen((event) {
       if (event == 'reclamationsUpdated') {
-        _fetchReclamations();
+        setState(() { _reclamations = _fetchReclamations(); });
       }
     });
   }
@@ -100,7 +100,6 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
       );
       return;
     }
-
     setState(() => _isLoading = true);
     try {
       await ReclamationService.updateReclamationStatus(
@@ -108,7 +107,7 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
         'In Progress',
         assignedTo: _userName,
       );
-      _fetchReclamations();
+      setState(() { _reclamations = _fetchReclamations(); });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Réclamation prise en charge avec succès')),
       );
@@ -125,7 +124,7 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
     setState(() => _isLoading = true);
     try {
       await ReclamationService.updateReclamationStatus(r.id, 'Done', assignedTo: _userName);
-      _fetchReclamations();
+      setState(() { _reclamations = _fetchReclamations(); });
     } finally {
       setState(() => _isLoading = false);
     }
@@ -732,7 +731,7 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
           );
           
           if (result == true) {
-            _fetchReclamations();
+            setState(() { _reclamations = _fetchReclamations(); });
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Row(
@@ -755,9 +754,7 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
                 ),
               ),
             );
-            setState(() {
-              _selectedIndex = 0;
-            });
+            _selectedIndex = 0;
           }
         },
         child: Icon(Icons.add, color: Colors.blue),
@@ -881,7 +878,7 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
     );
     
     if (result == true) {
-      _fetchReclamations();
+      setState(() { _reclamations = _fetchReclamations(); });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -932,7 +929,7 @@ class _StaffDashboardState extends State<StaffDashboard> with SingleTickerProvid
       setState(() => _isLoading = true);
       try {
         await ReclamationService.deleteReclamation(id, context);
-        _fetchReclamations();
+        setState(() { _reclamations = _fetchReclamations(); });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
