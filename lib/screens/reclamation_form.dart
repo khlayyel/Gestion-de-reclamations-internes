@@ -133,6 +133,11 @@ class _ReclamationFormState extends State<ReclamationForm> {
   final TextEditingController _objetController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
+  // Ajout : états pour afficher les erreurs sous les champs
+  bool _showObjetError = false;
+  bool _showDescriptionError = false;
+  bool _showLocationError = false;
+
   // Fonction pour récupérer l'email de l'utilisateur connecté
   void _getUserEmail() async {
     String? email = await ApiService.obtenirEmailUtilisateurConnecte();
@@ -176,6 +181,26 @@ class _ReclamationFormState extends State<ReclamationForm> {
 
   // Fonction pour soumettre le formulaire
   void _submitForm() async {
+    setState(() {
+      _showObjetError = _objetController.text.isEmpty;
+      _showDescriptionError = _descriptionController.text.isEmpty;
+      _showLocationError = _location.isEmpty;
+    });
+
+    // Focus/scroll uniquement sur le premier champ vide
+    if (_showObjetError) {
+      await _focusAndScroll(_objetFocus, _objetKey);
+      return;
+    }
+    if (_showDescriptionError) {
+      await _focusAndScroll(_descriptionFocus, _descriptionKey);
+      return;
+    }
+    if (_showLocationError) {
+      await _focusAndScroll(_locationFocus, _locationKey);
+      return;
+    }
+
     if (_createdBy.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -251,20 +276,6 @@ class _ReclamationFormState extends State<ReclamationForm> {
           duration: Duration(seconds: 3),
         ),
       );
-      return;
-    }
-
-    // Vérification des champs vides et focus auto
-    if (_objetController.text.isEmpty) {
-      await _focusAndScroll(_objetFocus, _objetKey);
-      return;
-    }
-    if (_descriptionController.text.isEmpty) {
-      await _focusAndScroll(_descriptionFocus, _descriptionKey);
-      return;
-    }
-    if (_location.isEmpty) {
-      await _focusAndScroll(_locationFocus, _locationKey);
       return;
     }
 
@@ -526,10 +537,14 @@ class _ReclamationFormState extends State<ReclamationForm> {
                                   ),
                                   filled: true,
                                   fillColor: Colors.white,
+                                  errorText: _showObjetError ? 'Veuillez remplir ce champ car il est obligatoire.' : null,
                                 ),
                                 controller: _objetController,
                                 validator: (value) => value!.isEmpty ? 'L\'objet est requis' : null,
-                                onChanged: (value) => setState(() => _objet = value),
+                                onChanged: (value) => setState(() {
+                                  _objet = value;
+                                  if (_showObjetError && value.isNotEmpty) _showObjetError = false;
+                                }),
                                 onSaved: (value) => _objet = value!,
                               ),
                               SizedBox(height: 16),
@@ -544,11 +559,15 @@ class _ReclamationFormState extends State<ReclamationForm> {
                                   ),
                                   filled: true,
                                   fillColor: Colors.white,
+                                  errorText: _showDescriptionError ? 'Veuillez remplir ce champ car il est obligatoire.' : null,
                                 ),
                                 maxLines: 3,
                                 controller: _descriptionController,
                                 validator: (value) => value!.isEmpty ? 'La description est requise' : null,
-                                onChanged: (value) => setState(() => _description = value),
+                                onChanged: (value) => setState(() {
+                                  _description = value;
+                                  if (_showDescriptionError && value.isNotEmpty) _showDescriptionError = false;
+                                }),
                                 onSaved: (value) => _description = value!,
                               ),
                             ],
@@ -586,8 +605,13 @@ class _ReclamationFormState extends State<ReclamationForm> {
                                   ),
                                   filled: true,
                                   fillColor: Colors.white,
+                                  errorText: _showLocationError ? 'Veuillez remplir ce champ car il est obligatoire.' : null,
                                 ),
                                 validator: (value) => value!.isEmpty ? 'L\'emplacement est requis' : null,
+                                onChanged: (value) => setState(() {
+                                  _location = value;
+                                  if (_showLocationError && value.isNotEmpty) _showLocationError = false;
+                                }),
                                 onSaved: (value) => _location = value!,
                               ),
                               SizedBox(height: 16),
