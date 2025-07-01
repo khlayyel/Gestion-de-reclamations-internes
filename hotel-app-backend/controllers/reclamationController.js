@@ -64,21 +64,18 @@ exports.createReclamation = async (req, res) => {
     await reclamation.save();
 
     // Notifier les utilisateurs concernés par email ET push
-    const admins = await User.find({ role: 'admin' });
     const staffs = await User.find({ role: 'staff', departments: { $in: reclamation.departments } });
     
-    const allUsersToNotify = [...admins, ...staffs];
-    const uniqueUsers = Array.from(new Set(allUsersToNotify.map(u => u.id))).map(id => {
-        return allUsersToNotify.find(u => u.id === id);
+    // Envoi d'email : uniquement aux staffs concernés
+    const uniqueStaffs = Array.from(new Set(staffs.map(u => u.id))).map(id => {
+        return staffs.find(u => u.id === id);
     });
-
-    // Envoyer les notifications par email
-    const emailsToNotify = uniqueUsers.map(u => u.email).filter(Boolean);
+    const emailsToNotify = uniqueStaffs.map(u => u.email).filter(Boolean);
     if (emailsToNotify.length > 0) {
       await sendReclamationNotification(reclamation, emailsToNotify);
     }
 
-    const playerIds = uniqueUsers.flatMap(u => u.playerIds).filter(Boolean); // Récupère tous les playerIds et filtre les valeurs null/undefined
+    const playerIds = uniqueStaffs.flatMap(u => u.playerIds).filter(Boolean); // Récupère tous les playerIds et filtre les valeurs null/undefined
 
     if (playerIds.length > 0) {
         const heading = `Nouveau: ${reclamation.objet}`;
@@ -172,15 +169,13 @@ exports.updateReclamation = async (req, res) => {
     console.log('Réclamation mise à jour:', updatedReclamation);
 
     // Envoyer une notification push
-    const admins = await User.find({ role: 'admin' });
     const staffs = await User.find({ role: 'staff', departments: { $in: updatedReclamation.departments } });
     
-    const allUsersToNotify = [...admins, ...staffs];
-     const uniqueUsers = Array.from(new Set(allUsersToNotify.map(u => u.id))).map(id => {
-        return allUsersToNotify.find(u => u.id === id);
+    const uniqueStaffs = Array.from(new Set(staffs.map(u => u.id))).map(id => {
+        return staffs.find(u => u.id === id);
     });
 
-    const playerIds = uniqueUsers.flatMap(u => u.playerIds).filter(Boolean);
+    const playerIds = uniqueStaffs.flatMap(u => u.playerIds).filter(Boolean);
 
     if (playerIds.length > 0) {
         const heading = `Mise à jour: ${updatedReclamation.objet}`;
