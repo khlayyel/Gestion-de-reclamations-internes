@@ -11,7 +11,17 @@ const app = express();
 // Utiliser CORS pour autoriser les requêtes cross-origin (toutes origines)
 app.use(cors({
   origin: 'https://reclamations-internes.vercel.app',
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// Ajout manuel des headers CORS pour les requêtes préflight (OPTIONS)
+app.options('*', cors({
+  origin: 'https://reclamations-internes.vercel.app',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // Middleware pour parser les requêtes JSON (body parser)
